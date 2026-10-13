@@ -1,0 +1,224 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<title>Trio Chat — Mindy, Cheffy & Funny</title>
+<style>
+body{font-family:'Baloo 2','Comic Sans MS','Chalkboard SE',system-ui,sans-serif;background:linear-gradient(135deg,#ffe29f 0%,#ffa99f 45%,#a0c4ff 100%) fixed;color:#2b2140;margin:0;padding:20px;max-width:1040px;margin:auto;min-height:100vh}
+h1{font-size:34px;color:#fff;text-shadow:0 3px 0 #ff6b9a,0 6px 14px #0003;margin:0 0 12px}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+input,select,button{font:inherit;font-size:16px;padding:8px 14px;border-radius:999px;border:3px solid #fff;background:#fffc;color:#2b2140}
+label{display:flex;align-items:center;gap:6px;font-weight:700}
+#topic{flex:1;min-width:220px}button{cursor:pointer;font-weight:800;transition:transform .15s}button:hover{transform:scale(1.07)}#start{background:#4cd964;color:#fff}#stop{background:#ff5470;color:#fff}button:disabled{opacity:.5;transform:none}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:70px}
+.card{position:relative;border-radius:28px;padding:14px;text-align:center;background:#fffd;border:4px solid #fff;box-shadow:0 8px 0 #0001;transition:transform .45s cubic-bezier(.34,1.8,.5,1),filter .4s,opacity .4s,box-shadow .4s}
+.stage.live .card{transform:scale(.9);filter:saturate(.55);opacity:.7}
+.stage.live .card.speaking,.stage.live .card.thinking{transform:scale(1.2);filter:none;opacity:1;z-index:2}
+.card.speaking{box-shadow:0 0 0 6px var(--c),0 0 40px 10px var(--c)}
+.card.thinking{box-shadow:0 0 0 4px var(--c)}
+.bubble{position:absolute;left:50%;bottom:100%;transform:translate(-50%,10px) scale(.3);opacity:0;width:240px;background:var(--c);color:#fff;font-weight:700;font-size:14px;line-height:1.25;padding:10px 12px;border-radius:20px;box-shadow:0 6px 16px #0003;transition:all .35s cubic-bezier(.34,1.8,.5,1);pointer-events:none}
+.bubble:after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-10px;border:10px solid transparent;border-top-color:var(--c);border-bottom:0}
+.card.speaking .bubble{opacity:1;transform:translate(-50%,-6px) scale(1)}
+.pop{position:fixed;font-size:28px;pointer-events:none;animation:pop 1.4s ease-out forwards;z-index:9}
+@keyframes pop{0%{transform:translate(0,0) scale(.3) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(var(--r));opacity:0}}
+.face{width:150px;height:150px;margin:0 auto;display:block;overflow:visible}
+.bob{transform-origin:75px 140px;transform-box:view-box}
+.eyes{animation:blink 4.5s infinite;transform-origin:75px 82px;transform-box:view-box}
+.pupils{transition:transform .3s}
+.mouth-o{transform-origin:75px 112px;transform-box:view-box}
+.thinking .pupils{animation:look 1.6s ease-in-out infinite}
+.speaking .bob{animation:bounce .45s ease-in-out infinite}
+.speaking .mouth-o{animation:talk .18s infinite alternate}
+.dots{opacity:0}.thinking .dots{opacity:1}
+.dots circle{fill:#2b2140;animation:dot 1.2s infinite}.dots circle:nth-child(2){animation-delay:.2s}.dots circle:nth-child(3){animation-delay:.4s}
+#c-Mindy .eyes{animation-duration:6s}
+#c-Funny .bob{animation:bounce 1.6s ease-in-out infinite}
+#c-Funny.speaking .bob{animation-duration:.4s}
+#c-Funny .eye-r{animation:wink 5s infinite;transform-origin:92px 82px;transform-box:view-box}
+#c-Cheffy .hat{animation:wobble 3s ease-in-out infinite;transform-origin:75px 40px;transform-box:view-box}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+@keyframes wink{0%,70%,80%,100%{transform:scaleY(1)}74%,76%{transform:scaleY(.08)}}
+@keyframes look{0%,100%{transform:translate(0,-5px)}40%{transform:translate(-5px,-6px)}70%{transform:translate(5px,-4px)}}
+@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1.4)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes wobble{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes dot{0%,100%{opacity:.2}50%{opacity:1}}
+.name{font-weight:800;font-size:22px;color:var(--c)}.role{font-size:13px;opacity:.75}
+.state{display:inline-block;margin-top:6px;padding:2px 12px;border-radius:999px;background:var(--c);color:#fff;font-weight:700;font-size:12px;letter-spacing:1px}
+#sub{margin:22px 0 8px;min-height:56px;font-size:21px;font-weight:700;background:#fffe;padding:12px 18px;border-radius:24px;text-align:center;box-shadow:0 6px 0 #0001}
+#status{font-size:13px;opacity:.7}#log{max-height:300px;overflow:auto;background:#fffc;border-radius:22px;padding:12px 16px}h3{color:#fff;text-shadow:0 2px 0 #0002}
+#log div{margin:4px 0}#log b{color:var(--c)}
+.mouth-s{transform-origin:75px 112px;transform-box:view-box;transition:transform .08s}
+.card.synced.speaking .mouth-o{animation:none}
+.speaking .bob{animation:squash .42s ease-in-out infinite!important}
+@keyframes squash{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-7px) scale(.95,1.06)}60%{transform:translateY(1px) scale(1.06,.94)}}
+.ant{transform-origin:40px 86px;transform-box:view-box;animation:ant 3.2s ease-in-out infinite}
+#c-Cheffy .ant{animation-delay:-1s}#c-Funny .ant{animation-duration:1.8s}
+.speaking .ant{animation-duration:.6s}
+@keyframes ant{0%,100%{transform:rotate(0)}40%{transform:rotate(-7deg)}70%{transform:rotate(4deg)}}
+.card.nod .face{animation:nod .6s ease-in-out}@keyframes nod{30%{transform:translateY(5px) rotate(2deg)}60%{transform:translateY(-2px)}}
+.card.giggle .face{animation:gig .7s ease-in-out}@keyframes gig{20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}80%{transform:rotate(5deg)}}
+.card.cheer .face{animation:cheer .5s ease-in-out 4}@keyframes cheer{50%{transform:translateY(-22px) scale(1.08)}}
+.stage.enter .card{animation:enter .8s cubic-bezier(.34,1.8,.5,1) both;animation-delay:calc(var(--i)*.15s)}
+@keyframes enter{0%{transform:translateY(-120px) scale(.4) rotate(-15deg);opacity:0}100%{opacity:1}}
+.thinking .face{animation:thinkb 1.4s ease-in-out infinite}@keyframes thinkb{50%{transform:translateY(-4px) rotate(-3deg)}}
+.mini{position:absolute;top:6px;right:-6px;background:#fff;color:#2b2140;font-weight:800;font-size:14px;padding:4px 10px;border-radius:14px;border:3px solid var(--c);opacity:0;transform:scale(.3);pointer-events:none;z-index:3}
+.mini.show{animation:mini 1.8s cubic-bezier(.34,1.8,.5,1)}@keyframes mini{0%{opacity:0;transform:scale(.3)}15%,80%{opacity:1;transform:scale(1) rotate(-4deg)}100%{opacity:0;transform:scale(.8) translateY(-10px)}}
+.pupils{transition:transform .35s cubic-bezier(.34,1.6,.5,1)}
+.vpick{margin-top:8px;max-width:100%;font-size:12px;padding:4px 8px}
+</style></head><body>
+<h1>🎙️ Trio Chat</h1>
+<div class="controls">
+<input id="topic" placeholder="Topic, e.g. Plan my healthy weekend" value="Plan my healthy weekend">
+<label>Turns <input id="turns" type="number" min="1" max="60" value="9" style="width:64px"></label>
+<select id="lang"><option value="auto" selected>Auto (EN + ID mix)</option><option value="en">English only</option><option value="id">Bahasa Indonesia only</option></select>
+<label title="Each Start opens new Mind conversations so tone resets"><input type="checkbox" id="fresh" checked> Fresh session</label>
+<label id="srvwrap" style="display:none" title="Use natural server voices (ElevenLabs/OpenAI)"><input type="checkbox" id="srvtts" checked> Server voice</label>
+<button id="start">▶ Start</button><button id="stop" disabled>■ Stop</button>
+</div>
+<div class="cards stage" id="cards"></div>
+<div id="sub">Press Start to let them talk.</div><div id="status"></div>
+<h3>Transcript</h3><div id="log"></div>
+<script>
+const AGENTS=[
+ {name:'Mindy',role:'Personal assistant',color:'#4f8cff',dark:'#1a3fa8',pitch:1.0,rate:1.07,vi:0,female:true},
+ {name:'Cheffy',role:'Personal chef',color:'#2fb86a',dark:'#173f8a',body:'#3a7bd5',pitch:1.1,rate:1.1,vi:1,female:false},
+ {name:'Funny',role:'Crazy soulmate',color:'#d36bff',dark:'#7a1fa8',pitch:1.35,rate:1.14,vi:2,female:true}];
+const $=id=>document.getElementById(id);
+function face(a){const c=a.body||a.color,d=a.dark,id=a.name;
+const knob=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${d}" stroke-width="4" stroke-linecap="round"/><circle cx="${x2}" cy="${y2}" r="6" fill="url(#g-${id})"/>`;
+const acc={
+ Mindy:`<g><circle cx="58" cy="82" r="16" fill="none" stroke="#222" stroke-width="3"/><circle cx="92" cy="82" r="16" fill="none" stroke="#222" stroke-width="3"/><line x1="74" y1="82" x2="76" y2="82" stroke="#222" stroke-width="3"/></g>
+  <path d="M50 128 Q75 150 100 128" fill="none" stroke="#e53935" stroke-width="4"/><rect x="66" y="136" width="18" height="14" rx="2" fill="#fff" stroke="#999"/><rect x="69" y="140" width="12" height="2" fill="#4f8cff"/>`,
+ Cheffy:`<g class="hat"><rect x="47" y="34" width="56" height="16" rx="3" fill="#fff" stroke="#ddd"/><circle cx="55" cy="26" r="14" fill="#fff"/><circle cx="75" cy="18" r="17" fill="#fff"/><circle cx="95" cy="26" r="14" fill="#fff"/><rect x="47" y="30" width="56" height="10" fill="#fff"/><rect x="47" y="44" width="56" height="4" fill="#3fbf6f"/></g>
+  <path d="M48 132 L75 146 L102 132" fill="none" stroke="#3fbf6f" stroke-width="6" stroke-linecap="round"/>`,
+ Funny:`<g transform="rotate(18 100 40)"><path d="M84 46 L100 6 L116 46 Z" fill="#ffd54f"/><circle cx="92" cy="38" r="3" fill="#ff4081"/><circle cx="104" cy="28" r="3" fill="#7c4dff"/><circle cx="100" cy="6" r="6" fill="#ff4081"/></g>
+  <g transform="translate(42 118)"><path d="M0 0 L-12 -8 L-12 8 Z M0 0 L12 -8 L12 8 Z" fill="#ffd54f"/><circle r="4" fill="#ff4081"/></g>`};
+const mouth=id==='Funny'?`<g class="mouth-o"><path d="M64 108 Q75 122 88 106" fill="#3a0d24" stroke="#3a0d24" stroke-width="3" stroke-linecap="round"/></g>`
+ :id==='Cheffy'?`<g class="mouth-o"><path d="M67 108 Q75 118 83 108 Z" fill="#2a1010"/></g>`
+ :`<g class="mouth-o"><ellipse cx="75" cy="112" rx="4" ry="5" fill="#1a1a2e"/></g>`;
+return `<svg class="face" viewBox="0 0 150 160"><defs><radialGradient id="g-${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".18" stop-color="${c}"/><stop offset="1" stop-color="${d}"/></radialGradient></defs>
+<g class="bob"><g class="ant">${knob(38,70,14,58)}${knob(36,86,10,88)}${knob(40,100,18,116)}</g>
+<ellipse cx="75" cy="152" rx="40" ry="5" fill="#000" opacity=".25"/>
+<circle cx="75" cy="88" r="52" fill="url(#g-${id})"/>
+<ellipse cx="55" cy="56" rx="14" ry="8" fill="#fff" opacity=".45" transform="rotate(-30 55 56)"/>
+<g class="eyes"><g class="eye-l"><circle cx="58" cy="82" r="14" fill="#fff"/></g><g class="eye-r"><circle cx="92" cy="82" r="14" fill="#fff"/></g>
+<g class="pupils"><circle cx="60" cy="84" r="7" fill="#111"/><circle cx="94" cy="84" r="7" fill="#111"/><circle cx="62" cy="81" r="2" fill="#fff"/><circle cx="96" cy="81" r="2" fill="#fff"/></g></g>
+<g class="mouth-s">${mouth}</g>${acc[id]}
+<g class="dots"><circle cx="118" cy="40" r="4" fill="#fff"/><circle cx="130" cy="30" r="5" fill="#fff"/><circle cx="142" cy="18" r="6" fill="#fff"/></g></g></svg>`}
+$('cards').innerHTML=AGENTS.map((a,i)=>`<div class="card" id="c-${a.name}" style="--c:${a.color};--i:${i}"><div class="bubble" id="b-${a.name}"></div><div class="mini" id="m-${a.name}"></div>
+${face(a)}
+<div class="name">${a.name}</div><div class="role">${a.role}</div><div class="state" id="s-${a.name}">READY</div>
+<select class="vpick" id="v-${a.name}" title="Voice for ${a.name}"><option value="">🎙️ Auto voice</option></select></div>`).join('');
+const card=a=>$('c-'+a.name), byName=n=>AGENTS.find(a=>a.name===n);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms)), rnd=(a,b)=>a+Math.random()*(b-a), pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+function setState(a,s){const c=card(a);c.classList.remove('thinking','speaking');if(s!=='READY')c.classList.add(s.toLowerCase());$('s-'+a.name).textContent=s}
+let running=false,transcript=[],serverTTS=false,curAudio=null;
+
+/* ---------- voices ---------- */
+const PREF={en:{Mindy:['Jenny','Aria','Sonia','Google UK English Female','Samantha','Zira','Libby'],
+               Cheffy:['Guy','Davis','Christopher','Ryan','Google UK English Male','Daniel','David','Mark','Alex'],
+               Funny:['Ana','Michelle','Emma','Ava','Google US English','Karen','Victoria','Moira','Tessa']},
+          id:{Mindy:['Gadis','Google Bahasa Indonesia','Damayanti'],Cheffy:['Ardi','Google Bahasa Indonesia'],Funny:['Gadis','Google Bahasa Indonesia','Damayanti']}};
+const quality=v=>(/natural|neural|online/i.test(v.name)?60:0)+(/google/i.test(v.name)?25:0)+(v.localService?0:5);
+function voices(){return 'speechSynthesis'in window?speechSynthesis.getVoices():[]}
+function autoVoice(a,L){const vs=voices().filter(v=>v.lang.toLowerCase().replace('_','-').startsWith(L==='id'?'id':'en'));if(!vs.length)return null;
+ const others=AGENTS.filter(o=>o!==a).map(o=>chosen[o.name+L]).filter(Boolean);
+ const score=v=>{const i=PREF[L][a.name].findIndex(p=>v.name.includes(p));return quality(v)+(i<0?0:40-i*3)-(others.includes(v.name)?30:0)};
+ const best=[...vs].sort((x,y)=>score(y)-score(x))[0];chosen[a.name+L]=best.name;return best}
+const chosen={};
+function voiceFor(a,L){const want=localStorage.getItem('trio-voice-'+a.name);
+ if(want){const v=voices().find(v=>v.name===want);if(v&&(v.lang.toLowerCase().startsWith(L)))return v}
+ return autoVoice(a,L)}
+function fillPickers(){const vs=voices();if(!vs.length)return;const list=[...vs].filter(v=>/^(en|id)/i.test(v.lang)).sort((x,y)=>quality(y)-quality(x));
+ AGENTS.forEach(a=>{const s=$('v-'+a.name),saved=localStorage.getItem('trio-voice-'+a.name)||'';
+  s.innerHTML='<option value="">🎙️ Auto voice</option>'+list.map(v=>`<option value="${v.name.replace(/"/g,'&quot;')}">${quality(v)>=60?'⭐ ':''}${v.name} (${v.lang})</option>`).join('');
+  s.value=saved;s.onchange=()=>{s.value?localStorage.setItem('trio-voice-'+a.name,s.value):localStorage.removeItem('trio-voice-'+a.name);
+   const v=vs.find(x=>x.name===s.value);if(v){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v.lang.startsWith('id')?`Halo, aku ${a.name}!`:`Hi, I'm ${a.name}!`);u.voice=v;u.lang=v.lang;u.pitch=a.pitch;u.rate=a.rate;speechSynthesis.speak(u)}}})}
+if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=fillPickers;fillPickers()}
+
+/* ---------- speech ---------- */
+const stripEmoji=t=>t.replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();
+const LAUGH=/\b(?:(?:ha|he|hi|wk){2,}h?|lol|lmao|xixi+)\b/gi;
+const detect=t=>/\b(aku|kamu|gue|lo|yang|dan|nggak|gak|ya|dong|sih|deh|kok|untuk|jangan|makan|sehat|ini|itu|banget|aja|udah)\b/i.test(t)?'id':'en';
+function mouthPulse(a){const m=card(a).querySelector('.mouth-s');m.style.transform='scaleY(1.9)';clearTimeout(m._t);m._t=setTimeout(()=>m.style.transform='',120)}
+function sayChunk(a,text,L,opt){return new Promise(res=>{const u=new SpeechSynthesisUtterance(text);u.lang=L==='id'?'id-ID':'en-US';const v=voiceFor(a,L);if(v)u.voice=v;
+ u.pitch=Math.min(2,a.pitch+opt.dp);u.rate=a.rate+opt.dr;let synced=false;
+ u.onboundary=()=>{synced=true;card(a).classList.add('synced');mouthPulse(a)};
+ let t=setInterval(()=>{if(!running){speechSynthesis.cancel();clearInterval(t);res()}},150);
+ u.onend=u.onerror=()=>{clearInterval(t);res()};speechSynthesis.speak(u)})}
+async function speak(a,raw,lang){const text=stripEmoji(raw);if(!text)return sleep(600);
+ if(serverTTS&&$('srvtts').checked){try{const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent:a.name,text,lang})});
+   if(r.ok){const url=URL.createObjectURL(await r.blob());await playAudio(a,url);URL.revokeObjectURL(url);return}}catch{}}
+ if(!('speechSynthesis'in window))return sleep(1500);
+ const L=lang==='auto'?detect(text):lang;
+ const parts=text.match(/[^.!?…]+[.!?…]*|[.!?…]+/g)||[text];
+ for(const p0 of parts){if(!running)return;const p=p0.trim();if(!p)continue;
+  const laughOnly=p.replace(LAUGH,'').replace(/[\s.,!?…]/g,'')==='';
+  const said=p.replace(LAUGH,m=>L==='id'?'ha ha ha':'ha ha ha');
+  if(LAUGH.test(p)){giggle(a);LAUGH.lastIndex=0}
+  await sayChunk(a,said,L,{dp:(laughOnly?.3:0)+rnd(-.06,.06)+(p.endsWith('?')?.05:0)+(p.endsWith('!')?.04:0),dr:(laughOnly?.15:0)+rnd(-.05,.05)});
+  await sleep(rnd(110,260))}}
+function playAudio(a,url){return new Promise(res=>{const au=new Audio(url);curAudio=au;let ctx,an,raf;
+ try{ctx=new AudioContext();const src=ctx.createMediaElementSource(au);an=ctx.createAnalyser();an.fftSize=256;src.connect(an);an.connect(ctx.destination);
+  const buf=new Uint8Array(an.frequencyBinCount),m=card(a).querySelector('.mouth-s');card(a).classList.add('synced');
+  const loop=()=>{an.getByteTimeDomainData(buf);let s=0;for(const x of buf)s=Math.max(s,Math.abs(x-128));m.style.transform=`scaleY(${(0.5+s/25).toFixed(2)})`;raf=requestAnimationFrame(loop)};loop()}catch{}
+ const done=()=>{cancelAnimationFrame(raf);ctx&&ctx.close();curAudio=null;res()};au.onended=au.onerror=done;au.play().catch(done)})}
+
+/* ---------- turn taking ---------- */
+function pickNext(prev,line){const w={};
+ for(const a of AGENTS){if(a===prev)continue;w[a.name]=1+Math.random()*.6;
+  if(line&&new RegExp('\\b'+a.name+'\\b','i').test(line))w[a.name]+=3;
+  if(a.name==='Funny'&&prev&&prev.name!=='Funny'&&!/[!😂🤣😆]/u.test(line||''))w[a.name]+=1.3}
+ let tot=Object.values(w).reduce((x,y)=>x+y,0),r=Math.random()*tot;for(const n in w){if((r-=w[n])<=0)return byName(n)}return byName(Object.keys(w)[0])}
+function ask(a,turn,ctx){return fetch('/api/reply',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({agent:a.name,transcript:transcript.slice(),turn,...ctx})}).then(r=>r.json().then(j=>r.ok?j:{error:j.error||('HTTP '+r.status)})).catch(e=>({error:e.message}))}
+
+/* ---------- reactions & fidgets ---------- */
+const FILL={en:['hmm 🤔','ooh 👀','haha 😆','wait wait…','ok ok 😄','lol','mm-hmm','ehh? 😮'],id:['hmm 🤔','eh? 👀','wkwk 😆','bentar…','iya iya 😄','hehe','oke…','lho? 😮']};
+function mini(a,txt){const m=$('m-'+a.name);m.textContent=txt;m.classList.remove('show');void m.offsetWidth;m.classList.add('show')}
+function giggle(a){const c=card(a);c.classList.remove('giggle');void c.offsetWidth;c.classList.add('giggle')}
+function nod(a){const c=card(a);c.classList.remove('nod');void c.offsetWidth;c.classList.add('nod')}
+function lookAt(listener,target){const p=card(listener).querySelector('.pupils');if(!target){p.style.transform='';return}
+ const d=AGENTS.indexOf(target)-AGENTS.indexOf(listener);p.style.transform=`translate(${Math.sign(d)*5}px,${Math.abs(d)>1?1:0}px)`}
+function emojiPop(a,list,n=6){const r=card(a).getBoundingClientRect();for(let k=0;k<n;k++){const e=document.createElement('div');e.className='pop';e.textContent=list[k%list.length];
+ e.style.left=(r.left+r.width/2+rnd(-30,30))+'px';e.style.top=(r.top+r.height/3)+'px';e.style.setProperty('--dx',rnd(-120,120)+'px');e.style.setProperty('--dy',rnd(-200,-60)+'px');e.style.setProperty('--r',rnd(-180,180)+'deg');
+ document.body.append(e);setTimeout(()=>e.remove(),1500)}}
+function confetti(a){emojiPop(a,a.name==='Funny'?['🎉','✨','😜','💖','🤪','⭐']:a.name==='Cheffy'?['🥑','🥦','🍓','✨']:['📋','✨','⭐'],10)}
+let speaker=null,reactT=null;
+function startReactions(lang){clearInterval(reactT);reactT=setInterval(()=>{if(!running)return;
+ const L=lang==='id'?'id':lang==='auto'?pick(['en','id']):'en';
+ for(const a of AGENTS){if(a===speaker||card(a).classList.contains('thinking'))continue;
+  lookAt(a,speaker);const r=Math.random();
+  if(speaker){if(r<.18)nod(a);else if(r<.26&&a.name==='Funny'){giggle(a);if(Math.random()<.5)emojiPop(a,['😆','🤭','😂'],3)}else if(r<.3)emojiPop(a,pick([['👍'],['😮'],['💡'],['❤️'],['😂']]),2)}
+  else if(r<.3)mini(a,pick(FILL[L]))}},1600)}
+// idle look-around
+setInterval(()=>{if(running)return;for(const a of AGENTS)if(Math.random()<.35)card(a).querySelector('.pupils').style.transform=`translate(${rnd(-5,5)}px,${rnd(-4,3)}px)`},1800);
+
+/* ---------- main loop with prefetch ---------- */
+function addLog(a,text){const d=document.createElement('div');d.style.setProperty('--c',a.color);d.innerHTML=`<b>${a.name}:</b> `;d.append(text);$('log').append(d);$('log').scrollTop=1e9}
+async function waitWithFillers(p,a){let done=false;p.then(()=>done=true);const t0=Date.now();
+ while(!done&&running){$('status').textContent=`${a.name} is thinking… ${Math.round((Date.now()-t0)/1000)}s`;await Promise.race([p,sleep(1000)])}return p}
+async function run(){running=true;$('start').disabled=true;$('stop').disabled=false;transcript=[];$('log').innerHTML='';
+ const session=$('fresh').checked?'s'+Date.now().toString(36):'';const st=$('cards');st.classList.remove('enter');void st.offsetWidth;st.classList.add('live','enter');
+ const topic=$('topic').value.trim()||'today',lang=$('lang').value,turns=Math.max(1,+$('turns').value||9),ctx={topic,lang,session};
+ transcript.push({speaker:'User',text:topic});$('sub').textContent='🎬 '+topic;startReactions(lang);
+ let next=pickNext(null,topic),pending=ask(next,0,ctx),prev=null;
+ for(let i=0;i<turns&&running;i++){const a=next;speaker=null;setState(a,'THINKING');
+  const j=await waitWithFillers(pending,a);if(!running)break;
+  if(j.error){$('status').textContent='Error: '+j.error;setState(a,'READY');break}
+  transcript.push({speaker:a.name,text:j.text});addLog(a,j.text);
+  if(i+1<turns){next=pickNext(a,j.text);pending=ask(next,i+1,ctx);setState(next,'THINKING')}  // prefetch while speaking
+  $('sub').innerHTML=`<b style="color:${a.color}">${a.name}:</b> `;$('sub').append(j.text);$('b-'+a.name).textContent=j.text;
+  speaker=a;card(a).classList.remove('synced');setState(a,'SPEAKING');AGENTS.forEach(o=>o!==a&&!card(o).classList.contains('thinking')&&lookAt(o,a));
+  if(a.name==='Funny'||Math.random()<.2)confetti(a);
+  for(const o of AGENTS)if(o!==a&&o!==next&&new RegExp('\\b'+o.name+'\\b','i').test(j.text))mini(o,pick(['me?? 😳','👀','hey! 😤','haha 😅']));
+  $('status').textContent=`${a.name} is speaking…`+(i+1<turns?` (${next.name} is cooking up a reply)`:'');
+  await speak(a,j.text,lang);setState(a,'READY');speaker=null;prev=a;await sleep(rnd(150,400))}
+ const finished=running;stop(true);if(finished&&transcript.length>2)celebrate()}
+function celebrate(){AGENTS.forEach((a,k)=>setTimeout(()=>{confetti(a);giggle(a)},k*250));$('sub').textContent="🎉 That's a wrap! 🎉";
+ for(const a of AGENTS)card(a).classList.add('cheer');setTimeout(()=>AGENTS.forEach(a=>card(a).classList.remove('cheer')),2400)}
+function stop(done){running=false;clearInterval(reactT);speaker=null;$('cards').classList.remove('live');'speechSynthesis'in window&&speechSynthesis.cancel();curAudio&&curAudio.pause();
+ AGENTS.forEach(a=>{setState(a,'READY');lookAt(a,null)});$('start').disabled=false;$('stop').disabled=true;
+ if(!done)$('status').textContent='Stopped.';else if(!$('status').textContent.startsWith('Error'))$('status').textContent='Conversation finished.'}
+$('start').onclick=run;$('stop').onclick=()=>stop(false);
+fetch('/api/health').then(r=>r.json()).then(h=>{serverTTS=!!h.tts;$('srvwrap').style.display=serverTTS?'flex':'none';
+ if(h.mock)$('status').textContent='Running in MOCK mode (canned lines, no API key).';else if(serverTTS)$('status').textContent=`Server voice ready (${h.tts}).`});
+</script></body></html>

@@ -1,0 +1,1 @@
+{"name":"trio-chat","version":"1.0.0","private":true,"scripts":{"start":"node server.js","mock":"MOCK=1 node server.js"},"dependencies":{"@animocabrands/minds-client-lib":"^0.1.7"}}
