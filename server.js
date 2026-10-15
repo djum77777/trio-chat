@@ -234,6 +234,18 @@ function inferEmotion(text){const s=String(text||'');
   return'neutral'}
 function abortError(){const e=new Error('request cancelled');e.name='AbortError';return e}
 function wait(ms,signal){return new Promise((resolve,reject)=>{if(signal?.aborted)return reject(abortError());const id=setTimeout(done,ms);function done(){signal?.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(id);reject(abortError())}signal?.addEventListener('abort',cancel,{once:true})})}
+function requestBuffer(req,maxBytes){
+  if(req.body!==undefined&&req.body!==null){
+    const b=Buffer.isBuffer(req.body)?req.body:Buffer.from(typeof req.body==='string'?req.body:JSON.stringify(req.body));
+    if(b.length>maxBytes)throw new Error('request too large');
+    return Promise.resolve(b);
+  }
+  return new Promise((resolve,reject)=>{const chunks=[];let n=0,done=false;
+    req.on('data',d=>{if(done)return;n+=d.length;if(n>maxBytes){done=true;reject(new Error('request too large'));req.destroy?.()}else chunks.push(Buffer.from(d))});
+    req.on('end',()=>{if(!done){done=true;resolve(Buffer.concat(chunks))}});
+    req.on('error',e=>{if(!done){done=true;reject(e)}});
+  });
+}
 
 async function requestHandler(req, res) {
   const send = (s, o) => { if(res.destroyed||res.writableEnded)return;res.writeHead(s, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
@@ -247,17 +259,14 @@ async function requestHandler(req, res) {
     mindMap: Object.fromEntries(Object.keys(PERSONAS).map(a => [a, E[a.toUpperCase() + '_MIND'] || a])),
     agents: Object.fromEntries(Object.keys(PERSONAS).map(a => { const c = cfg(a); return [a, { baseUrl: c.baseUrl, model: c.model, hasKey: !!c.apiKey }]; })) });
   if (req.url === '/api/tts' && req.method === 'POST') {
-    let b = ''; req.on('data', d => { b += d; if (b.length > 1e5) req.destroy(); });
-    req.on('end', async () => { try { const a = await tts(JSON.parse(b || '{}')); res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Content-Length': a.length }); res.end(a); }
-      catch (e) { send(TTS ? 502 : 404, { error: e.message }); } });
+    try { const b=await requestBuffer(req,1e5),a=await tts(JSON.parse(b.toString()||'{}'));res.writeHead(200,{'Content-Type':'audio/mpeg','Content-Length':a.length});res.end(a); }
+    catch(e){send(TTS?502:404,{error:e.message})}
     return;
   }
   if (req.url === '/api/reply' && req.method === 'POST') {
-    let b = ''; req.on('data', d => { b += d; if (b.length > 1e6) req.destroy(); });
-    req.on('end', async () => { const t0 = Date.now(),ctl=new AbortController();
-      const cancel=()=>ctl.abort();req.once('aborted',cancel);res.once('close',()=>{if(!res.writableEnded)cancel()});
-      try { const payload=JSON.parse(b||'{}'),full=cleanText(await reply(payload,ctl.signal)),text=(payload.lang==='zh'?full.split('|||EN|||')[0]:full).trim(),displayText=stripDelivery(text);send(200,{text,displayText,emotion:inferEmotion(text),ms:Date.now()-t0}); }
-      catch (e) { if(e.name!=='AbortError')send(500,{error:e.message}); } });
+    const t0=Date.now(),ctl=new AbortController(),cancel=()=>ctl.abort();req.once('aborted',cancel);res.once('close',()=>{if(!res.writableEnded)cancel()});
+    try { const b=await requestBuffer(req,1e6),payload=JSON.parse(b.toString()||'{}'),full=cleanText(await reply(payload,ctl.signal)),text=(payload.lang==='zh'?full.split('|||EN|||')[0]:full).trim(),displayText=stripDelivery(text);send(200,{text,displayText,emotion:inferEmotion(text),ms:Date.now()-t0}); }
+    catch(e){if(e.name!=='AbortError')send(500,{error:e.message})}
     return;
   }
   if (req.url.startsWith('/api/recordings')) {
@@ -265,18 +274,17 @@ async function requestHandler(req, res) {
     if (req.method === 'POST') {
       const agent = (u.searchParams.get('agent') || '').trim();
       if (!PERSONAS[agent]) return send(400, { error: 'agent must be Mindy, Cheffy or Funny' });
-      const chunks = []; let n = 0;
-      req.on('data', d => { n += d.length; if (n > 10e6) req.destroy(); else chunks.push(d); });
-      req.on('end', () => { try {
-        if (!chunks.length) return send(400, { error: 'no audio received' });
+      try {
+        const audio=await requestBuffer(req,10e6),n=audio.length;
+        if (!n) return send(400, { error: 'no audio received' });
         fs.mkdirSync(REC_DIR, { recursive: true });
         const ext = /ogg|opus/.test(req.headers['content-type'] || '') ? 'ogg' : 'webm';
         const file = `${Date.now()}-${agent}.${ext}`;
-        fs.writeFileSync(path.join(REC_DIR, file), Buffer.concat(chunks));
+        fs.writeFileSync(path.join(REC_DIR, file), audio);
         const item = { file, agent, label: (u.searchParams.get('label') || '').slice(0, 60), bytes: n, at: new Date().toISOString() };
         const l = recList(); l.unshift(item); recSave(l);
         send(200, { ok: true, item });
-      } catch (e) { send(500, { error: e.message }); } });
+      } catch (e) { send(500, { error: e.message }); }
       return;
     }
     if (req.method === 'GET') return send(200, { recordings: recList() });
