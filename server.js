@@ -6,7 +6,9 @@ try { for (const l of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').spli
 } } catch {}
 const E = process.env, PORT = +E.PORT || 4100, MOCK = E.MOCK === '1' || E.MOCK === 'true';
 // ---- voice recordings store (server-side, assigned per Mind) ----
-const REC_DIR = path.join(__dirname, 'recordings');
+// Vercel Functions only allow writes inside /tmp. Recordings stored there are
+// temporary; use durable object storage before relying on Voice Lab in production.
+const REC_DIR = E.VERCEL ? path.join('/tmp', 'trio-chat-recordings') : path.join(__dirname, 'recordings');
 const REC_INDEX = path.join(REC_DIR, 'index.json');
 const recList = () => { try { return JSON.parse(fs.readFileSync(REC_INDEX, 'utf8')); } catch { return []; } };
 const recSave = l => { fs.mkdirSync(REC_DIR, { recursive: true }); fs.writeFileSync(REC_INDEX, JSON.stringify(l, null, 2)); };
@@ -233,7 +235,7 @@ function inferEmotion(text){const s=String(text||'');
 function abortError(){const e=new Error('request cancelled');e.name='AbortError';return e}
 function wait(ms,signal){return new Promise((resolve,reject)=>{if(signal?.aborted)return reject(abortError());const id=setTimeout(done,ms);function done(){signal?.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(id);reject(abortError())}signal?.addEventListener('abort',cancel,{once:true})})}
 
-http.createServer(async (req, res) => {
+async function requestHandler(req, res) {
   const send = (s, o) => { if(res.destroyed||res.writableEnded)return;res.writeHead(s, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(o)); };
   if (req.url === '/api/minds') {
     if (!E.MINDS_BUILDER_API_KEY) return send(400, { error: 'MINDS_BUILDER_API_KEY is not set' });
@@ -298,7 +300,15 @@ http.createServer(async (req, res) => {
   if (!f.startsWith(path.join(__dirname, 'public'))) return send(403, { error: 'forbidden' });
   fs.readFile(f, (e, d) => { if (e) return send(404, { error: 'not found' });
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); res.end(d); });
-}).listen(PORT, () => console.log(`Trio Chat on http://localhost:${PORT} ${MOCK ? '(MOCK mode)' : ''}`));
+}
+
+// Vercel imports the request handler. Running this file directly keeps the
+// existing localhost workflow unchanged.
+module.exports = requestHandler;
+if (require.main === module) {
+  http.createServer(requestHandler).listen(PORT, () =>
+    console.log(`Trio Chat on http://localhost:${PORT} ${MOCK ? '(MOCK mode)' : ''}`));
+}
 
 function cleanText(t) {
   return String(t || '')
