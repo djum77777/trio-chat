@@ -6,8 +6,11 @@
 html{overflow-x:hidden}
 body{font-family:'Baloo 2','Comic Sans MS','Chalkboard SE',system-ui,sans-serif;background:linear-gradient(135deg,#ffe29f 0%,#ffa99f 45%,#a0c4ff 100%) fixed;color:#2b2140;margin:0 auto;padding:20px;max-width:1320px;width:100%;min-height:100vh}
 h1{font-size:34px;color:#fff;text-shadow:0 3px 0 #ff6b9a,0 6px 14px #0003;margin:0 0 12px}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.setup-controls{align-items:center;padding:14px;background:#ffffffb8;border:3px solid #fff;border-radius:24px;box-shadow:0 8px 22px #40214a1f}
+.setup-controls>input,.setup-controls>select,.setup-controls>button{min-height:46px}.setup-controls .field{white-space:nowrap}.setup-controls .toggle{min-height:46px;padding:6px 12px;border-radius:999px;background:#fff9;border:3px solid #fff;justify-content:center}
 input,select,button{font:inherit;font-size:16px;padding:8px 14px;border-radius:999px;border:3px solid #fff;background:#fffc;color:#2b2140}
 input,select,textarea{max-width:100%}
+input[type=checkbox]{width:20px;height:20px;min-width:20px;padding:0;margin:0;accent-color:#7d4dff}
 label{display:flex;align-items:center;gap:6px;font-weight:700}
 #topic{flex:1;min-width:160px}button{cursor:pointer;font-weight:800;transition:transform .15s}button:hover{transform:scale(1.07)}#start{background:#4cd964;color:#fff}#stop{background:#ff5470;color:#fff}button:disabled{opacity:.5;transform:none}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:145px}
@@ -91,7 +94,7 @@ label{display:flex;align-items:center;gap:6px;font-weight:700}
 #timing{display:none;font-weight:700;background:#fffe;padding:8px 14px;border-radius:16px;margin:8px 0;box-shadow:0 6px 0 #0001;font-size:15px}
 #talk.on{background:#ff5470;color:#fff}
 #rec.onrec{background:#ff5470;color:#fff}
-.recrow{display:flex;align-items:center;gap:10px;background:#fffc;border-radius:14px;padding:6px 12px;margin:4px 0;font-size:14px}
+.voice-controls{padding:12px;background:#ffffff75;border-radius:20px}.recrow{display:flex;align-items:center;gap:10px;background:#fffc;border-radius:14px;padding:6px 12px;margin:4px 0;font-size:14px}
 .recrow .rmeta{margin-left:auto;opacity:.55;font-size:12px}
 .rplay,.rdel{border-radius:10px;padding:2px 10px}
 #reclist{max-height:240px;overflow:auto}
@@ -125,22 +128,47 @@ label{display:flex;align-items:center;gap:6px;font-weight:700}
 .card.fidget .face{animation:fidget .75s cubic-bezier(.34,1.7,.5,1)}.card.peek .pupils{animation:peek .8s ease-in-out}.scene-long .card.fidget .face{animation:sleepy .95s ease-in-out}.scene-talkshow .card.speaking{animation:spotlight 1.3s ease-in-out infinite alternate}
 @keyframes listenbob{50%{transform:translateY(-3px) rotate(1.5deg)}}@keyframes fidget{30%{transform:translateX(-5px) rotate(-4deg)}65%{transform:translateX(5px) rotate(4deg)}}@keyframes peek{35%{transform:translate(7px,-2px)}70%{transform:translate(-5px,1px)}}@keyframes sleepy{50%{transform:translateY(6px) rotate(-6deg) scale(.98)}}@keyframes spotlight{to{filter:brightness(1.08) drop-shadow(0 0 10px #ffe68a)}}
 @media (min-width:961px) and (max-width:1150px){.face{width:120px;height:120px}.cards{gap:12px;margin-top:145px}}
-@media (max-width:960px){body{padding:14px}h1{font-size:26px}.showframe{padding:10px;min-height:0}.cards{grid-template-columns:1fr;gap:100px;margin-top:135px}.bubble{width:min(330px,calc(100vw - 58px))}.face{width:110px;height:110px}#sub{font-size:18px}.stage.live .card.speaking,.stage.live .card.thinking{transform:scale(1.05)}.scene-short:before,.scene-short:after,.scene-long:after{opacity:.25}.opening-title{font-size:34px}}
+@media (max-width:960px){body{padding:14px}h1{font-size:26px}.showframe{padding:10px;min-height:0}.cards{grid-template-columns:1fr;gap:100px;margin-top:135px}.card{width:min(100%,520px);margin-inline:auto}.bubble{width:min(360px,calc(100vw - 58px))}.face{width:110px;height:110px}#sub{font-size:18px}.stage.live .card.speaking,.stage.live .card.thinking{transform:scale(1.05)}.scene-short:before,.scene-short:after,.scene-long:after{opacity:.25}.opening-title{font-size:34px}}
+@media (max-width:640px){
+ body{padding:9px 9px 24px;background-attachment:scroll}h1{text-align:center;font-size:27px;margin-bottom:9px}
+ .setup-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px;border-radius:20px;margin-bottom:12px}
+ .setup-controls>*{min-width:0;margin:0}.setup-controls>input,.setup-controls>select,.setup-controls>button{width:100%;min-height:46px}
+ .setup-controls .field{display:grid;align-content:start;align-items:stretch;gap:3px;white-space:normal;font-size:13px;padding:0 2px}
+ .setup-controls .field input,.setup-controls .field select{width:100%!important;min-width:0}
+ #topic,.steward-field,.reply-field,#lang,#micmode,#miclang,#talk{grid-column:1/-1}
+ .setup-controls .toggle{min-height:46px;padding:7px 8px;font-size:13px;line-height:1.05;white-space:normal;text-align:left}
+ #start,#stop{font-size:16px;padding-inline:8px}
+ .showframe{border-width:3px;border-radius:25px;padding:8px 7px 16px;min-height:0}
+ .cards{gap:94px;margin-top:128px}.card{border-radius:23px;padding:10px;width:100%;max-width:410px}
+ .stage.live .card{transform:scale(.97)}.stage.live .card.speaking,.stage.live .card.thinking{transform:scale(1)}
+ .bubble{width:calc(100vw - 42px);max-width:390px;padding:11px 13px;font-size:15px;line-height:1.35;border-radius:18px}
+ .face{width:104px;height:104px}.name{font-size:20px}.role{font-size:12px}.state{margin-top:3px}.vpick{min-height:38px;font-size:12px}
+ .scene-talkshow:before{top:14px;max-width:calc(100% - 24px);padding:4px 12px;font-size:12px;letter-spacing:2px}
+ .scene-short:before{left:4%;top:20px;transform:scale(.72);transform-origin:top left}.scene-short:after{right:1%;top:30px;font-size:22px;letter-spacing:4px}
+ .scene-long:before{font-size:14px;letter-spacing:5px}.scene-long:after{top:47px;width:90%;white-space:normal;text-align:center;font-size:11px;letter-spacing:1px}
+ .opening{border-radius:21px}.opening-content{width:100%;padding:16px 12px}.opening-title{font-size:30px}.opening-topic{font-size:16px;line-height:1.25;overflow-wrap:anywhere}.opening-cast{font-size:16px}.opening-avatars{gap:12px}.opening-avatars span{width:49px;height:49px;font-size:24px}
+ #sub{margin:14px 0 6px;min-height:0;padding:11px 13px;border-radius:18px;font-size:16px;line-height:1.35}#status{padding-inline:3px;overflow-wrap:anywhere}#timing{font-size:13px;overflow-wrap:anywhere}
+ h3{font-size:21px;margin:20px 2px 8px}#log{max-height:55vh;padding:8px;border-radius:18px;gap:8px}#log .log-entry{padding:10px 11px}#log .log-head{font-size:16px}#log .log-cn{font-size:16px}
+ .voice-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;margin-bottom:10px}.voice-controls>*{min-width:0;width:100%;margin:0}.voice-controls #reclabel,.voice-controls #recstate{grid-column:1/-1}.voice-controls #recstate{overflow-wrap:anywhere;text-align:center}
+ .recrow{display:grid;grid-template-columns:auto 1fr auto;gap:7px;padding:9px}.recrow>span:not(.rmeta){min-width:0;overflow-wrap:anywhere}.recrow .rmeta{grid-column:1/-1;grid-row:2;margin:0;font-size:11px}.rplay,.rdel{min-height:38px}
+}
+@media (max-width:380px){.setup-controls{grid-template-columns:1fr}.setup-controls>*{grid-column:1!important}.cards{gap:90px}.bubble{width:calc(100vw - 32px)}.opening-kicker{letter-spacing:3px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 </style></head><body>
 <h1>🎙️ Trio Chat</h1>
-<div class="controls">
+<div class="controls setup-controls">
 <input id="topic" placeholder="Topic, e.g. Plan my healthy weekend" value="Plan my healthy weekend">
-<label>Steward <input id="steward" value="Mariana" maxlength="40" placeholder="Your name" style="width:140px"></label>
-<label>Turns <input id="turns" type="number" min="1" max="60" value="9" style="width:64px"></label>
-<label>Reply <select id="replylength"><option value="short">Quick</option><option value="talkshow" selected>Talk-show</option><option value="long">Long story</option></select></label>
+<label class="field steward-field">Steward <input id="steward" value="Mariana" maxlength="40" placeholder="Your name" style="width:140px"></label>
+<label class="field turns-field">Turns <input id="turns" type="number" min="1" max="60" value="9" style="width:64px"></label>
+<label class="field reply-field">Reply <select id="replylength"><option value="short">Quick</option><option value="talkshow" selected>Talk-show</option><option value="long">Long story</option></select></label>
 <select id="lang"><option value="auto" selected>Auto (EN + ID mix)</option><option value="en">English only</option><option value="id">Bahasa Indonesia only</option><option value="zh">简体中文</option></select>
-<label title="Each Start opens new Mind conversations so tone resets"><input type="checkbox" id="fresh" checked> Fresh session</label>
-<label id="srvwrap" style="display:none" title="Use natural server voices (ElevenLabs/OpenAI)"><input type="checkbox" id="srvtts" checked> Server voice</label>
+<label class="toggle" title="Each Start opens new Mind conversations so tone resets"><input type="checkbox" id="fresh" checked> Fresh session</label>
+<label class="toggle" id="srvwrap" style="display:none" title="Use natural server voices (ElevenLabs/OpenAI)"><input type="checkbox" id="srvtts" checked> Server voice</label>
 <select id="micmode" title="How your voice joins"><option value="off">Mic off</option><option value="hold">Tap to talk (long)</option><option value="live">Always-on mic</option></select>
 <select id="miclang" title="Speech recognition needs one listening language"><option value="id" selected>Mic: Bahasa Indonesia</option><option value="en">Mic: English</option><option value="zh">麦克风：简体中文</option></select>
 <button id="talk" style="display:none">Tap to talk</button>
-<label title="Gentle randomized instrumental ambience; automatically quieter under speech"><input type="checkbox" id="bgm" checked> 🎵 BGM</label>
-<label title="Shorter replies, faster turns"><input type="checkbox" id="fast"> Fast replies</label>
+<label class="toggle" title="Gentle randomized instrumental ambience; automatically quieter under speech"><input type="checkbox" id="bgm" checked> 🎵 BGM</label>
+<label class="toggle" title="Shorter replies, faster turns"><input type="checkbox" id="fast"> Fast replies</label>
 <button id="start">▶ Start</button><button id="stop" disabled>■ Stop</button>
 </div>
 <div class="showframe scene-talkshow" id="showframe">
@@ -151,7 +179,7 @@ label{display:flex;align-items:center;gap:6px;font-weight:700}
 <div id="timing"></div>
 <h3>Transcript</h3><div id="log"></div>
 <h3>Voice Lab - record a voice for a Mind</h3>
-<div class="controls">
+<div class="controls voice-controls">
 <button id="rec">Record</button>
 <select id="recagent"><option>Mindy</option><option>Cheffy</option><option>Funny</option></select>
 <input id="reclabel" placeholder="Label, e.g. Mariana sample">
@@ -212,21 +240,23 @@ async function openingSequence(mode,topic,lang){const key=mode==='long'?'long':m
  const intro=setInterval(()=>{$('opening-cast').textContent=names[n++%names.length]},900);
  await sleep(duration-1000);if(!running){clearInterval(intro);o.classList.remove('active');return}o.classList.add('reveal');await sleep(1000);clearInterval(intro);o.classList.remove('active');await sleep(350);o.className='opening'}
 
-/* ---------- randomized, royalty-free procedural BGM ---------- */
-const BGM_THEMES=[
- {name:'Late-night lounge',notes:[57,60,64,67,64,60],type:'sine'},
- {name:'Sunny studio',notes:[60,64,67,71,69,64],type:'triangle'},
- {name:'Playful kitchen',notes:[55,59,62,67,62,59],type:'triangle'},
- {name:'Cosmic gossip',notes:[52,59,62,64,59,55],type:'sine'}];
-let bgmCtx=null,bgmGain=null,bgmTimer=null,bgmTheme=null,bgmStep=0,bgmTempo=620,bgmMode='talkshow',bgmBase=.035;
+/* ---------- session-specific, royalty-free procedural BGM ---------- */
+const BGM_THEMES={
+ talkshow:{name:'Talk-show lounge',notes:[60,64,67,71,69,67,64,62],bass:[48,48,53,55],type:'triangle',tempo:520,base:.14,life:.72},
+ short:{name:'Quick living room',notes:[67,71,74,76,74,71,69,72],bass:[55,60,57,62],type:'square',tempo:360,base:.16,life:.38},
+ long:{name:'Bedtime moonlight',notes:[60,64,67,64,59,62,67,62],bass:[48,45,43,47],type:'sine',tempo:940,base:.11,life:1.65}
+};
+let bgmCtx=null,bgmGain=null,bgmTimer=null,bgmTheme=null,bgmStep=0,bgmTempo=520,bgmMode='talkshow',bgmBase=.14;
 const hz=m=>440*Math.pow(2,(m-69)/12);
-function bgmBeat(){if(!bgmCtx||!bgmGain||!running||!$('bgm').checked)return;const now=bgmCtx.currentTime,n=bgmTheme.notes[bgmStep%bgmTheme.notes.length];
- const life=Math.max(.72,bgmTempo/720),o=bgmCtx.createOscillator(),g=bgmCtx.createGain();o.type=bgmTheme.type;o.frequency.value=hz(n+(bgmStep%12===11?12:0));g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.12,now+.04);g.gain.exponentialRampToValueAtTime(.0001,now+life);o.connect(g);g.connect(bgmGain);o.start(now);o.stop(now+life+.04);bgmStep++;
- if(bgmStep%24===0)bgmTheme=pick(BGM_THEMES)}
-async function startBgm(mode='talkshow'){if(!$('bgm').checked||bgmCtx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;bgmMode=mode;const choices=mode==='long'?[BGM_THEMES[0],BGM_THEMES[3]]:mode==='short'?[BGM_THEMES[1],BGM_THEMES[2]]:BGM_THEMES;bgmTempo=mode==='long'?920:mode==='short'?500:620;bgmBase=mode==='long'?.025:.035;bgmTheme=pick(choices);bgmStep=Math.floor(rnd(0,6));bgmCtx=new AC();bgmGain=bgmCtx.createGain();bgmGain.gain.value=bgmBase;bgmGain.connect(bgmCtx.destination);try{await bgmCtx.resume()}catch{}bgmBeat();bgmTimer=setInterval(bgmBeat,bgmTempo)}
-function duckBgm(on){if(bgmCtx&&bgmGain)bgmGain.gain.setTargetAtTime(on ? .010 : bgmBase,bgmCtx.currentTime,.12)}
-function stopBgm(){clearInterval(bgmTimer);bgmTimer=null;if(!bgmCtx)return;const c=bgmCtx,g=bgmGain;g.gain.setTargetAtTime(.0001,c.currentTime,.08);setTimeout(()=>c.close().catch(()=>{}),350);bgmCtx=bgmGain=null}
-$('bgm').onchange=()=>{if($('bgm').checked&&running)startBgm($('replylength').value);else stopBgm()};
+function bgmTone(note,when,life,peak,type){const o=bgmCtx.createOscillator(),g=bgmCtx.createGain();o.type=type;o.frequency.value=hz(note);g.gain.setValueAtTime(.0001,when);g.gain.exponentialRampToValueAtTime(peak,when+.035);g.gain.exponentialRampToValueAtTime(.0001,when+life);o.connect(g);g.connect(bgmGain);o.start(when);o.stop(when+life+.05)}
+function bgmBeat(){if(!bgmCtx||!bgmGain||!running||!$('bgm').checked)return;if(bgmCtx.state!=='running')return;const now=bgmCtx.currentTime,n=bgmTheme.notes[bgmStep%bgmTheme.notes.length];
+ bgmTone(n,now,bgmTheme.life,.11,bgmTheme.type);if(bgmStep%2===0)bgmTone(n+12,now+.07,bgmTheme.life*.62,.035,'sine');if(bgmStep%4===0)bgmTone(bgmTheme.bass[(bgmStep/4)%bgmTheme.bass.length],now,bgmTheme.life*1.35,.055,'sine');bgmStep++}
+async function startBgm(mode='talkshow'){if(!$('bgm').checked)return;mode=mode==='long'?'long':mode==='short'?'short':'talkshow';if(bgmCtx){if(bgmMode===mode){try{await bgmCtx.resume()}catch{}return}stopBgm()}
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC){$('bgm').checked=false;$('bgm').closest('label').title='BGM is not supported by this browser';return}bgmMode=mode;bgmTheme=BGM_THEMES[mode];bgmTempo=bgmTheme.tempo;bgmBase=bgmTheme.base;bgmStep=0;bgmCtx=new AC();bgmGain=bgmCtx.createGain();bgmGain.gain.value=bgmBase;bgmGain.connect(bgmCtx.destination);try{await bgmCtx.resume()}catch{}
+ if(bgmCtx.state!=='running'){const unlock=()=>bgmCtx?.resume().then(()=>bgmBeat()).catch(()=>{});document.addEventListener('pointerdown',unlock,{once:true})}bgmBeat();bgmTimer=setInterval(bgmBeat,bgmTempo);$('bgm').closest('label').title='Playing '+bgmTheme.name}
+function duckBgm(on){if(bgmCtx&&bgmGain)bgmGain.gain.setTargetAtTime(on ? bgmBase*.42 : bgmBase,bgmCtx.currentTime,.16)}
+function stopBgm(){clearInterval(bgmTimer);bgmTimer=null;if(!bgmCtx)return;const c=bgmCtx,g=bgmGain;try{g.gain.setTargetAtTime(.0001,c.currentTime,.08)}catch{}setTimeout(()=>c.close().catch(()=>{}),350);bgmCtx=bgmGain=null;bgmTheme=null}
+$('bgm').onchange=async()=>{if($('bgm').checked&&running)await startBgm($('replylength').value);else stopBgm()};
 
 /* ---------- voices ---------- */
 const PREF={en:{Mindy:['Jenny','Aria','Sonia','Google UK English Female','Samantha','Zira','Libby'],
@@ -299,11 +329,11 @@ function stopPlayback(){if(curAudio){curAudio.pause();curAudio._finish&&curAudio
 
 /* ---------- turn taking ---------- */
 function cancelAsks(){for(const c of activeAsks)c.abort();activeAsks.clear()}
-function ask(a,turn,ctx,epoch,snapshot,wrapUp=false,openingTurn=false,userMessage=null){const ctl=new AbortController();activeAsks.add(ctl);
+function ask(a,turn,ctx,epoch,snapshot,wrapUp=false,openingTurn=false,userMessage=null){const ctl=new AbortController(),generationStarted=Date.now();activeAsks.add(ctl);
  return fetch('/api/reply',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
   body:JSON.stringify({agent:a.name,transcript:snapshot,turn,wrapUp,openingTurn,...ctx,...(userMessage?{lastUser:userMessage.text}:{})})})
-  .then(r=>r.json().then(j=>{j=r.ok?j:{error:j.error||('HTTP '+r.status)};j._userId=userMessage?.id||0;j._epoch=epoch;return j}))
-  .catch(e=>({cancelled:e.name==='AbortError',error:e.name==='AbortError'?'cancelled':e.message,_epoch:epoch})).finally(()=>activeAsks.delete(ctl))}
+  .then(r=>r.json().then(j=>{j=r.ok?j:{error:j.error||('HTTP '+r.status)};j._userId=userMessage?.id||0;j._epoch=epoch;j._generationMs=Date.now()-generationStarted;return j}))
+  .catch(e=>({cancelled:e.name==='AbortError',error:e.name==='AbortError'?'cancelled':e.message,_epoch:epoch,_generationMs:Date.now()-generationStarted})).finally(()=>activeAsks.delete(ctl))}
 /* ---------- mic: hold-to-talk + always-on ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micMode='off',holdRec=null,liveRec=null,holdListening=false,holdParts=[],holdInterim='',preLines=[],lastUserText='',userMessageId=0,answeredUserId=0,claimedUserId=0;
@@ -361,19 +391,23 @@ function startReactions(lang){clearInterval(reactT);reactT=setInterval(()=>{if(!
 // idle look-around
 setInterval(()=>{if(running)return;for(const a of AGENTS)if(Math.random()<.35)card(a).querySelector('.pupils').style.transform=`translate(${rnd(-5,5)}px,${rnd(-4,3)}px)`},1800);
 
-/* ---------- shared-room loop: staggered openers + dynamic one-turn-ahead floor ---------- */
+/* ---------- shared-room loop: every Mind prepares; ready-first floor ---------- */
 function renderSubtitle(a,text,hide=false){const sub=$('sub');sub.replaceChildren();sub.classList.toggle('chinese-mode',hide);if(hide)return;const b=document.createElement('b');b.style.color=a.color;b.textContent=a.name+':';sub.append(b,' '+text)}
 function addLog(a,text,lang='en'){const d=document.createElement('div'),head=document.createElement('div'),name=document.createElement('b'),main=document.createElement('div');d.className='log-entry';d.style.setProperty('--c',a.color);head.className='log-head';name.textContent=a.name;head.append(name);main.className=lang==='zh'?'log-cn':'log-main';main.lang=lang==='zh'?'zh-CN':lang==='id'?'id':'en';main.textContent=text;d.append(head,main);$('log').append(d);$('log').scrollTop=1e9}
 function sysLine(msg){const d=document.createElement('div'),head=document.createElement('div'),b=document.createElement('b'),main=document.createElement('div');d.className='log-entry log-system';head.className='log-head';main.className='log-main';b.textContent='⚠ System';main.textContent=String(msg).slice(0,300);head.append(b);d.append(head,main);$('log').append(d);$('log').scrollTop=1e9}
 const WAITING={Mindy:[['🗂️','SORTING NOTES'],['📅','CHECKING PLAN']],Cheffy:[['🥕','PICKING IDEAS'],['🍳','STILL SIMMERING']],Funny:[['💭','PLOTTING A JOKE'],['💤','BRAIN NAP...']]};
-function waitingVisual(item){if(item.done||item.ready)return;const a=item.a;if(!item.started){setState(a,'THINKING','ON DECK');$('w-'+a.name).textContent='🎟️';return}const sec=(Date.now()-item.started)/1000;if(item.wrapUp){setState(a,'THINKING',sec<2?'THINKING':'PREPARING FINALE');$('w-'+a.name).textContent='🎬';if(sec>=9)card(a).classList.add('longwait');return}const phase=sec<5?0:1,[icon,label]=WAITING[a.name][phase];setState(a,'THINKING',item.openingTurn?(sec<2?'OPENING IDEA':'READYING OPINION'):(sec<2?'THINKING':label));$('w-'+a.name).textContent=item.openingTurn?'🎙️':icon;if(sec>=9)card(a).classList.add('longwait')}
+function waitingVisual(item){if(item.done||item.status==='ready'||item.a===speaker)return;const a=item.a;if(item.status==='retrying'){setState(a,'THINKING','RECONNECTING · KEPT');$('w-'+a.name).textContent='🔄';return}if(!item.started){setState(a,'THINKING','ON DECK');$('w-'+a.name).textContent='🎟️';return}const sec=(Date.now()-item.started)/1000;if(item.wrapUp){setState(a,'THINKING',sec>=75?'FINALE STILL COOKING':sec<2?'THINKING':'PREPARING FINALE');$('w-'+a.name).textContent='🎬';if(sec>=9)card(a).classList.add('longwait');return}const phase=sec<5?0:1,[icon,label]=WAITING[a.name][phase];setState(a,'THINKING',sec>=75?'STILL THINKING · KEPT':item.openingTurn?(sec<2?'OPENING IDEA':'READYING OPINION'):(sec<2?'THINKING':label));$('w-'+a.name).textContent=sec>=75?'♻️':item.openingTurn?'🎙️':icon;if(sec>=9)card(a).classList.add('longwait')}
 function emotionReaction(a,e){setEmotion(a,e);for(const o of AGENTS){if(o===a)continue;if(e==='amused'&&o.name==='Funny')giggle(o);else if(e==='worried'||e==='surprised'){setEmotion(o,e);setTimeout(()=>{if(o!==speaker)setEmotion(o,'neutral')},1000)}else nod(o)}}
 const TOPIC_HINTS={Mindy:/plan|schedule|time|organize|priority|work|money|calendar|rencana|jadwal|waktu|atur|kerja|uang|计划|安排|时间|工作|日程|优先/u,Cheffy:/food|cook|eat|meal|health|recipe|kitchen|makan|masak|sehat|resep|dapur|食物|吃|做饭|健康|食谱|厨房/u,Funny:/fun|joke|laugh|weird|love|friend|lucu|kocak|canda|ketawa|aneh|seru|笑|玩笑|有趣|奇怪|朋友/u};
 function openingOrder(mode){return mode==='long'?[byName('Cheffy'),byName('Mindy'),byName('Funny')]:mode==='short'?[byName('Mindy'),byName('Funny'),byName('Cheffy')]:[byName('Funny'),byName('Mindy'),byName('Cheffy')]}
-function chooseNext(text,lastSpeaker,stats,excluded=new Set()){const pending=userMessageId>answeredUserId?lastUserText:'',source=String(pending||text||'').toLowerCase(),explicit=AGENTS.find(a=>source.includes(a.name.toLowerCase())),pool=AGENTS.filter(a=>!excluded.has(a.name));return(pool.length?pool:AGENTS).map(a=>{let score=Math.random();if(explicit===a)score+=100;else if(source.includes(a.name.toLowerCase()))score+=16;if(TOPIC_HINTS[a.name].test(source))score+=7;const silence=stats.turn-(stats.last[a.name]??-3);score+=Math.min(7,Math.max(0,silence))*1.35;score-=(stats.count[a.name]||0)*.55;if(a===lastSpeaker&&explicit!==a)score-=14;return{a,score}}).sort((x,y)=>y.score-x.score)[0].a}
 function claimUser(){if(userMessageId<=answeredUserId||claimedUserId===userMessageId)return null;claimedUserId=userMessageId;return{id:userMessageId,text:lastUserText}}
-function prepareItem(a,turn,ctx,epoch,snapshot,{delay=0,wrapUp=false,openingTurn=false}={}){const item={a,wrapUp,openingTurn,started:null,readyAt:null,ready:false,done:false,promise:null};setState(a,'THINKING',delay?'ON DECK':openingTurn?'OPENING IDEA':'THINKING');waitingVisual(item);const watch=setInterval(()=>waitingVisual(item),1000);
- item.promise=(async()=>{if(delay)await sleep(delay);if(!running||epoch!==roomEpoch)return{cancelled:true};item.started=Date.now();waitingVisual(item);const userMessage=claimUser(),j=await ask(a,turn,ctx,epoch,snapshot,wrapUp,openingTurn,userMessage);if(j.error&&userMessage?.id===claimedUserId&&answeredUserId<userMessage.id)claimedUserId=0;item.ready=true;item.readyAt=Date.now();if(running&&epoch===roomEpoch&&!j.cancelled&&a!==speaker){setState(a,'THINKING',wrapUp?'FINALE READY':openingTurn?'OPINION READY':'READY TO JUMP IN');$('w-'+a.name).textContent=wrapUp?'🎬':openingTurn?'🎙️':'💬'}return j})().then(j=>({item,j})).finally(()=>clearInterval(watch));return item}
+function prepareItem(a,turn,ctx,epoch,snapshot,{wrapUp=false,openingTurn=false}={}){const item={a,wrapUp,openingTurn,started:Date.now(),readyAt:null,status:'generating',done:false,result:null,promise:null,attempts:0};if(a!==speaker)setState(a,'THINKING',openingTurn?'OPENING IDEA':'THINKING');waitingVisual(item);const watch=setInterval(()=>waitingVisual(item),1000);
+ item.promise=(async()=>{while(running&&epoch===roomEpoch){item.status='generating';item.started=Date.now();item.attempts++;waitingVisual(item);const userMessage=claimUser(),j=await ask(a,turn,ctx,epoch,snapshot,wrapUp,openingTurn,userMessage);if(j.cancelled)return j;if(j.error){if(userMessage?.id===claimedUserId&&answeredUserId<userMessage.id)claimedUserId=0;item.status='retrying';item.result=j;waitingVisual(item);await sleep(Math.min(5000,900+item.attempts*500));continue}
+   if(typeof j.text==='string'&&j.text.trim()){item.status='ready';item.readyAt=Date.now();item.result=j;if(running&&epoch===roomEpoch&&a!==speaker){setState(a,'THINKING',wrapUp?'FINALE READY':openingTurn?'OPINION READY':'SCRIPT READY');$('w-'+a.name).textContent=wrapUp?'🎬':openingTurn?'🎙️':'💬'}return j}}
+  return{cancelled:true}})().then(j=>({item,j})).finally(()=>clearInterval(watch));return item}
+function readyItem(pool,lastSpeaker,opened,stats,openingRank){const active=[...pool.values()].filter(x=>!x.done),allReady=active.filter(x=>x.status==='ready');if(!allReady.length)return null;const otherReady=allReady.filter(x=>x.a!==lastSpeaker);if(!otherReady.length&&active.some(x=>x.a!==lastSpeaker))return null;const ready=otherReady.length?otherReady:allReady;return ready.map(item=>{let score=0;if(!opened.has(item.a.name))score+=1000-(openingRank.get(item.a.name)||0)*5;const silence=stats.turn-(stats.last[item.a.name]??-3);score+=Math.min(12,Math.max(0,silence))*4-(stats.count[item.a.name]||0)*2;score-=item.readyAt/1e13;return{item,score}}).sort((x,y)=>y.score-x.score)[0].item}
+async function waitForReady(pool,lastSpeaker,opened,stats,openingRank){while(running){const ready=readyItem(pool,lastSpeaker,opened,stats,openingRank);if(ready)return ready;const pending=[...pool.values()].filter(x=>!x.done).map(x=>x.promise);$('status').textContent='All three Minds are preparing — the first ready Mind gets the floor.';if(!pending.length){await sleep(150);continue}await Promise.race(pending)}return null}
+function poolStatus(pool){const items=[...pool.values()].filter(x=>!x.done),ready=[...new Set(items.filter(x=>x.status==='ready').map(x=>x.a.name))],thinking=[...new Set(items.filter(x=>x.status!=='ready').map(x=>x.a.name))];return(ready.length?' · '+ready.join(' & ')+' ready':'')+(thinking.length?' · '+thinking.join(' & ')+' preparing':'')}
 async function run(){running=true;$('start').disabled=true;$('stop').disabled=false;transcript=[];$('log').innerHTML='';
  $('timing').style.display='none';
  const session=$('fresh').checked?'s'+Date.now().toString(36):'',st=$('cards');st.classList.remove('enter');void st.offsetWidth;st.classList.add('live','enter');
@@ -381,23 +415,18 @@ async function run(){running=true;$('start').disabled=true;$('stop').disabled=fa
  applyScene(ctx.replyLength);transcript.push({speaker:'User',text:topic,seed:true});
  const hadPre=preLines.length>0;preLines.forEach(t=>transcript.push({speaker:'User',text:t}));if(hadPre)lastUserText=preLines[preLines.length-1];else{lastUserText='';answeredUserId=userMessageId}claimedUserId=0;preLines=[];
  await startBgm(ctx.replyLength);if(micMode==='live')duckBgm(true);if(micMode==='live'&&SR&&!liveRec)startLive();$('sub').classList.remove('chinese-mode');$('sub').textContent='🎬 '+topic;startReactions(lang);
- roomEpoch++;cancelAsks();const epoch=roomEpoch,stats={turn:0,last:{},count:{}},excluded=new Set();let delivered=0,fails=0,cleanEnd=true,lastSpeaker=null,nextItem=null;
- let openingRemaining=openingOrder(ctx.replyLength).slice(0,Math.min(3,turns)).map((a,k)=>prepareItem(a,k,ctx,epoch,transcript.slice(),{delay:k*2500,openingTurn:true}));
+ roomEpoch++;cancelAsks();const epoch=roomEpoch,stats={turn:0,last:{},count:{}},opened=new Set(),pool=new Map(),order=openingOrder(ctx.replyLength),openingRank=new Map(order.map((a,i)=>[a.name,i]));let delivered=0,cleanEnd=true,lastSpeaker=null;
+ const fillPool=()=>{for(const a of AGENTS)if(!pool.has(a.name)&&running&&delivered<turns)pool.set(a.name,prepareItem(a,delivered,ctx,epoch,transcript.slice(),{openingTurn:!opened.has(a.name),wrapUp:delivered===turns-1}))};
+ fillPool();
  await openingSequence(ctx.replyLength,topic,lang);if(!running)return;
- while(delivered<turns&&running){let result;
-  if(openingRemaining.length){result=await Promise.race(openingRemaining.map(x=>x.promise));openingRemaining=openingRemaining.filter(x=>x!==result.item)}
-  else{if(!nextItem){const a=chooseNext(transcript.at(-1)?.text||topic,lastSpeaker,stats,excluded);nextItem=prepareItem(a,delivered,ctx,epoch,transcript.slice(),{wrapUp:delivered===turns-1})}result=await nextItem.promise;nextItem=null}
-  const {item,j}=result;item.done=true;const a=item.a,thinkS=item.started?((item.readyAt||Date.now())-item.started)/1000:0;
-  if(!running||epoch!==roomEpoch||j.cancelled)break;
-  if(j.error){fails++;excluded.add(a.name);sysLine(a.name+' skipped: '+j.error);mini(a,'SKIPPED ⏭️');setState(a,'READY');setEmotion(a,'worried');setTimeout(()=>setEmotion(a,'neutral'),900);if(fails>=3){cleanEnd=false;running=false;sysLine('Three Minds failed in a row, so the show was stopped.')}continue}
-  fails=0;excluded.clear();const out=j,emotion=out.emotion||emotionOf(out.text),visible=out.displayText||showText(out.text),bubbleText=lang==='zh'?showText(out.text):visible;
+ while(delivered<turns&&running){fillPool();const item=await waitForReady(pool,lastSpeaker,opened,stats,openingRank);if(!item)break;pool.delete(item.a.name);item.done=true;const j=item.result,a=item.a,thinkS=item.started?((item.readyAt||Date.now())-item.started)/1000:0;
+  if(!running||epoch!==roomEpoch||j?.cancelled)break;
+  const out=j,emotion=out.emotion||emotionOf(out.text),visible=out.displayText||showText(out.text),bubbleText=lang==='zh'?showText(out.text):visible;
   transcript.push({speaker:a.name,text:out.text,emotion});if(out._userId){answeredUserId=Math.max(answeredUserId,out._userId);if(claimedUserId===out._userId)claimedUserId=0}addLog(a,bubbleText,lang);renderSubtitle(a,visible,lang==='zh');
-  stats.count[a.name]=(stats.count[a.name]||0)+1;stats.last[a.name]=stats.turn++;delivered++;lastSpeaker=a;
-  if(!openingRemaining.length&&delivered<turns){const chosen=chooseNext(out.text,a,stats,excluded);nextItem=prepareItem(chosen,delivered,ctx,epoch,transcript.slice(),{wrapUp:delivered===turns-1})}
-  speaker=a;card(a).classList.remove('synced');setState(a,'SPEAKING');emotionReaction(a,emotion);AGENTS.forEach(o=>o!==a&&lookAt(o,a));const stopCaptions=startBubbleCaptions(a,bubbleText);
+  stats.count[a.name]=(stats.count[a.name]||0)+1;stats.last[a.name]=stats.turn++;opened.add(a.name);delivered++;lastSpeaker=a;speaker=a;card(a).classList.remove('synced');setState(a,'SPEAKING');emotionReaction(a,emotion);AGENTS.forEach(o=>o!==a&&lookAt(o,a));const stopCaptions=startBubbleCaptions(a,bubbleText);fillPool();
   if(a.name==='Funny'&&emotion==='excited')confetti(a);for(const o of AGENTS)if(o!==a&&out.text.toLowerCase().includes(o.name.toLowerCase()))mini(o,pick(['me?? 😳','👀','hey! 😤','oh! 😅']));
-  const preparing=openingRemaining.filter(x=>!x.done).map(x=>x.a.name);if(nextItem)preparing.push(nextItem.a.name);$('status').textContent=`${a.name} is speaking…`+(preparing.length?` (${[...new Set(preparing)].join(' & ')} preparing)`:'');
-  const tV=Date.now();duckBgm(true);try{await speak(a,out.text,lang,emotion)}finally{stopCaptions()}duckBgm(micMode==='live'||holdListening);const voiceS=(Date.now()-tV)/1000;$('timing').style.display='block';$('timing').textContent=a.name+': thinking '+thinkS.toFixed(1)+'s'+(out.ms?' (server '+(out.ms/1000).toFixed(1)+'s)':'')+' - voice '+voiceS.toFixed(1)+'s';setState(a,'READY');setEmotion(a,'neutral');speaker=null;await sleep(rnd(120,260))}
+  $('status').textContent=`${a.name} is speaking`+poolStatus(pool);
+  const tV=Date.now();duckBgm(true);try{await speak(a,out.text,lang,emotion)}finally{stopCaptions()}duckBgm(micMode==='live'||holdListening);const voiceS=(Date.now()-tV)/1000;$('timing').style.display='block';$('timing').textContent=a.name+': thinking '+thinkS.toFixed(1)+'s'+(out.ms?' (server '+(out.ms/1000).toFixed(1)+'s)':'')+' - voice '+voiceS.toFixed(1)+'s';setEmotion(a,'neutral');speaker=null;const own=pool.get(a.name);if(own)waitingVisual(own);else setState(a,'READY');await sleep(rnd(120,260))}
  const finished=running;stop(true);if(finished&&cleanEnd&&transcript.length>2)celebrate()}
 function celebrate(){AGENTS.forEach((a,k)=>setTimeout(()=>{confetti(a);giggle(a)},k*250));$('sub').classList.remove('chinese-mode');$('sub').textContent="🎉 That's a wrap! 🎉";
  for(const a of AGENTS)card(a).classList.add('cheer');setTimeout(()=>AGENTS.forEach(a=>card(a).classList.remove('cheer')),2400)}
