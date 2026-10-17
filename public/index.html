@@ -161,11 +161,11 @@ label{display:flex;align-items:center;gap:6px;font-weight:700}
 <label class="field steward-field">Steward <input id="steward" value="Mariana" maxlength="40" placeholder="Your name" style="width:140px"></label>
 <label class="field turns-field">Turns <input id="turns" type="number" min="1" max="60" value="9" style="width:64px"></label>
 <label class="field reply-field">Reply <select id="replylength"><option value="short">Quick</option><option value="talkshow" selected>Talk-show</option><option value="long">Long story</option></select></label>
-<select id="lang"><option value="auto" selected>Auto (EN + ID mix)</option><option value="en">English only</option><option value="id">Bahasa Indonesia only</option><option value="zh">简体中文</option></select>
+<select id="lang"><option value="en" selected>English</option><option value="id">Bahasa Indonesia</option><option value="zh">简体中文</option></select>
 <label class="toggle" title="Each Start opens new Mind conversations so tone resets"><input type="checkbox" id="fresh" checked> Fresh session</label>
 <label class="toggle" id="srvwrap" style="display:none" title="Use natural server voices (ElevenLabs/OpenAI)"><input type="checkbox" id="srvtts" checked> Server voice</label>
 <select id="micmode" title="How your voice joins"><option value="off">Mic off</option><option value="hold">Tap to talk (long)</option><option value="live">Always-on mic</option></select>
-<select id="miclang" title="Speech recognition needs one listening language"><option value="id" selected>Mic: Bahasa Indonesia</option><option value="en">Mic: English</option><option value="zh">麦克风：简体中文</option></select>
+<select id="miclang" title="Speech recognition needs one listening language"><option value="en" selected>Mic: English</option><option value="id">Mic: Bahasa Indonesia</option><option value="zh">麦克风：简体中文</option></select>
 <button id="talk" style="display:none">Tap to talk</button>
 <label class="toggle" title="Gentle randomized instrumental ambience; automatically quieter under speech"><input type="checkbox" id="bgm" checked> 🎵 BGM</label>
 <label class="toggle" title="Shorter replies, faster turns"><input type="checkbox" id="fast"> Fast replies</label>
@@ -254,7 +254,7 @@ function bgmBeat(){if(!bgmCtx||!bgmGain||!running||!$('bgm').checked)return;if(b
 async function startBgm(mode='talkshow'){if(!$('bgm').checked)return;mode=mode==='long'?'long':mode==='short'?'short':'talkshow';if(bgmCtx){if(bgmMode===mode){try{await bgmCtx.resume()}catch{}return}stopBgm()}
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC){$('bgm').checked=false;$('bgm').closest('label').title='BGM is not supported by this browser';return}bgmMode=mode;bgmTheme=BGM_THEMES[mode];bgmTempo=bgmTheme.tempo;bgmBase=bgmTheme.base;bgmStep=0;bgmCtx=new AC();bgmGain=bgmCtx.createGain();bgmGain.gain.value=bgmBase;bgmGain.connect(bgmCtx.destination);try{await bgmCtx.resume()}catch{}
  if(bgmCtx.state!=='running'){const unlock=()=>bgmCtx?.resume().then(()=>bgmBeat()).catch(()=>{});document.addEventListener('pointerdown',unlock,{once:true})}bgmBeat();bgmTimer=setInterval(bgmBeat,bgmTempo);$('bgm').closest('label').title='Playing '+bgmTheme.name}
-function duckBgm(on){if(bgmCtx&&bgmGain)bgmGain.gain.setTargetAtTime(on ? bgmBase*.42 : bgmBase,bgmCtx.currentTime,.16)}
+function duckBgm(on,mute=false){if(bgmCtx&&bgmGain)bgmGain.gain.setTargetAtTime(mute?.0001:on?bgmBase*.42:bgmBase,bgmCtx.currentTime,.16)}
 function stopBgm(){clearInterval(bgmTimer);bgmTimer=null;if(!bgmCtx)return;const c=bgmCtx,g=bgmGain;try{g.gain.setTargetAtTime(.0001,c.currentTime,.08)}catch{}setTimeout(()=>c.close().catch(()=>{}),350);bgmCtx=bgmGain=null;bgmTheme=null}
 $('bgm').onchange=async()=>{if($('bgm').checked&&running)await startBgm($('replylength').value);else stopBgm()};
 
@@ -293,9 +293,8 @@ function captionPieces(text,max){const sentences=String(text||'').match(/[^.!?�
 function captionPages(text){const clean=showText(text),pages=captionPieces(clean,/[\u3400-\u9fff]/u.test(clean)?34:72);return pages.length?pages:[clean]}
 function startBubbleCaptions(a,text){const el=$('b-'+a.name),pages=captionPages(text);let i=0,timer=null;const paint=()=>{if(!running||i>=pages.length)return;const page=pages[i++];el.textContent=page;el.classList.remove('caption-swap');void el.offsetWidth;el.classList.add('caption-swap');const spokenLine=page.split('\n')[0],han=(spokenLine.match(/[\u3400-\u9fff]/g)||[]).length,words=spokenLine.split(/\s+/).filter(Boolean).length,delay=Math.min(6000,Math.max(2200,han?han*170:words*330));if(i<pages.length)timer=setTimeout(paint,delay)};paint();return()=>{clearTimeout(timer);el.classList.remove('caption-swap')}}
 function emotionOf(t){const s=String(t||'');if(/\[(laugh|giggl|chuckl)|😂|🤣|😆|\b(?:lol|lmao|wkwk)\b/i.test(s))return'amused';if(/\[worried|😰|😨|\b(worried|concerned|cemas|khawatir)\b/i.test(s))return'worried';if(/\[(gasp|surpris)|😮|😱|\b(whoa|wow|astaga)\b/i.test(s))return'surprised';if(/\[excited|🥳|🎉|!{2,}/i.test(s))return'excited';if(/\[(cry|sob)|😭|😢/i.test(s))return'sad';if(/\[whisper/i.test(s))return'whispering';if(/\[(sarcastic|skeptical)|🤨|🙄/i.test(s))return'skeptical';return'neutral'}
-const detect=t=>{if(/[\u3400-\u9fff]/.test(String(t)))return'zh';const words=String(t||'').toLowerCase().match(/[a-zÀ-ÿ]+/g)||[],ids=new Set('aku kamu kalian gue gua lo yang dan atau dengan nggak enggak gak ya iya dong sih deh kok untuk dari ke di jangan makan sehat ini itu banget aja sudah udah belum mau bisa bikin jadi kalau karena tapi juga lebih lagi ada sama kita mereka gimana kenapa kapan siapa apa nih yuk'.split(' ')),ens=new Set('the a an and or with not yes for from to do does did eat healthy this that very just already want can make become if because but also more again there we they how why when who what let please'.split(' '));let id=0,en=0;for(const w of words){if(ids.has(w))id++;if(ens.has(w))en++}return id>en?'id':'en'};
 function mouthPulse(a){const m=card(a).querySelector('.mouth-s');m.style.transform='scaleY(1.9)';clearTimeout(m._t);m._t=setTimeout(()=>m.style.transform='',120)}
-function sayChunk(a,text,L,opt){return new Promise(res=>{const u=new SpeechSynthesisUtterance(text);u.lang=L==='id'?'id-ID':'en-US';const v=voiceFor(a,L);if(v)u.voice=v;
+function sayChunk(a,text,L,opt){return new Promise(res=>{const u=new SpeechSynthesisUtterance(text);u.lang=L==='id'?'id-ID':L==='zh'?'zh-CN':'en-US';const v=voiceFor(a,L);if(v)u.voice=v;
  u.pitch=Math.min(2,a.pitch+opt.dp);u.rate=a.rate+opt.dr;let synced=false;
  u.onboundary=()=>{synced=true;card(a).classList.add('synced');mouthPulse(a)};
  let t=setInterval(()=>{if(!running){speechSynthesis.cancel();clearInterval(t);res()}},150);
@@ -310,7 +309,7 @@ async function speak(a,raw,lang,emotion){const text=spoken(raw);if(!text)return 
  return browserSay(a,text,lang)}
 async function browserSay(a,text,lang){
  if(!('speechSynthesis'in window))return sleep(1500);
- const fixedL=lang==='auto'?detect(showText(text)):lang;
+ const fixedL=lang;
  const parts=text.match(/[^.!?…]+[.!?…]*|[.!?…]+/g)||[text];
  for(const p0 of parts){if(!running)return;const p=p0.trim();if(!p)continue;
   const L=fixedL;
@@ -329,36 +328,41 @@ function stopPlayback(){if(curAudio){curAudio.pause();curAudio._finish&&curAudio
 
 /* ---------- turn taking ---------- */
 function cancelAsks(){for(const c of activeAsks)c.abort();activeAsks.clear()}
-function ask(a,turn,ctx,epoch,snapshot,wrapUp=false,openingTurn=false,userMessage=null){const ctl=new AbortController(),generationStarted=Date.now();activeAsks.add(ctl);
+function ask(a,turn,ctx,epoch,snapshot,wrapUp=false,openingTurn=false,userMessage=null,owner=null){const ctl=new AbortController(),generationStarted=Date.now();activeAsks.add(ctl);if(owner)owner.controller=ctl;
  return fetch('/api/reply',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
   body:JSON.stringify({agent:a.name,transcript:snapshot,turn,wrapUp,openingTurn,...ctx,...(userMessage?{lastUser:userMessage.text}:{})})})
   .then(r=>r.json().then(j=>{j=r.ok?j:{error:j.error||('HTTP '+r.status)};j._userId=userMessage?.id||0;j._epoch=epoch;j._generationMs=Date.now()-generationStarted;return j}))
-  .catch(e=>({cancelled:e.name==='AbortError',error:e.name==='AbortError'?'cancelled':e.message,_epoch:epoch,_generationMs:Date.now()-generationStarted})).finally(()=>activeAsks.delete(ctl))}
+  .catch(e=>({cancelled:e.name==='AbortError',error:e.name==='AbortError'?'cancelled':e.message,_epoch:epoch,_generationMs:Date.now()-generationStarted})).finally(()=>{activeAsks.delete(ctl);if(owner?.controller===ctl)owner.controller=null})}
 /* ---------- mic: hold-to-talk + always-on ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let micMode='off',holdRec=null,liveRec=null,holdListening=false,holdParts=[],holdInterim='',preLines=[],lastUserText='',userMessageId=0,answeredUserId=0,claimedUserId=0;
+let micMode='off',holdRec=null,liveRec=null,holdListening=false,handRaised=false,holdFinalized=true,floorWaiters=[],holdParts=[],holdInterim='',preLines=[],lastUserText='',userMessageId=0,answeredUserId=0,claimedUserId=0,mustAnswerUserId=0,allowQueuedBeforeUser=false,livePool=null,liveRefreshForUser=null;
+const floorBlocked=()=>handRaised||holdListening;
+function releaseFloor(){if(floorBlocked())return;const waiters=floorWaiters.splice(0);for(const done of waiters)done()}
+function waitForFloor(){return floorBlocked()?new Promise(resolve=>floorWaiters.push(resolve)):Promise.resolve()}
 function srLang(){return $('miclang').value==='id'?'id-ID':$('miclang').value==='zh'?'zh-CN':'en-US'}
 function stewardName(){return ($('steward').value.trim()||'Mariana').slice(0,40)}
+function scheduleUserBridge(){if(!running)return;const hasReady=!!(livePool&&[...livePool.values()].some(x=>!x.done&&x.status==='ready'));mustAnswerUserId=userMessageId;allowQueuedBeforeUser=hasReady;if(!hasReady)liveRefreshForUser?.()}
 function userLine(text){text=(text||'').trim();if(!text)return;
  transcript.push({speaker:'User',text});
  lastUserText=text;userMessageId++;claimedUserId=0;
  const d=document.createElement('div'),head=document.createElement('div'),b=document.createElement('b'),main=document.createElement('div');d.className='log-entry log-user';head.className='log-head';main.className='log-main';b.textContent=stewardName();head.append(b);main.textContent=text;d.append(head,main);$('log').append(d);$('log').scrollTop=1e9;
- if(!running)preLines.push(text);else{AGENTS.forEach(a=>setEmotion(a,'surprised'));setTimeout(()=>AGENTS.forEach(a=>{if(a!==speaker)setEmotion(a,'neutral')}),900)}
+ if(!running)preLines.push(text);else{scheduleUserBridge();AGENTS.forEach(a=>setEmotion(a,'surprised'));setTimeout(()=>AGENTS.forEach(a=>{if(a!==speaker)setEmotion(a,'neutral')}),900)}
  $('sub').classList.remove('chinese-mode');$('sub').textContent=stewardName()+': '+text;$('status').textContent=stewardName()+' joined — the next newly prepared Mind will pick this up.'}
 function newRec(continuous){const r=new SR();r.lang=srLang();r.continuous=continuous;r.interimResults=true;return r}
-function finishHold(){const text=[...holdParts,holdInterim].join(' ').replace(/\s+/g,' ').trim();holdParts=[];holdInterim='';duckBgm(micMode==='live');$('talk').classList.remove('on');$('talk').textContent='Tap to talk';if(text)userLine(text)}
+function finishHold(){if(holdFinalized)return;holdFinalized=true;holdListening=false;handRaised=false;const text=[...holdParts,holdInterim].join(' ').replace(/\s+/g,' ').trim();holdParts=[];holdInterim='';duckBgm(micMode==='live');$('talk').classList.remove('on');$('talk').textContent='Tap to talk';if(text)userLine(text);else $('status').textContent='Your turn ended — releasing the next ready Mind.';releaseFloor()}
 function makeHold(){const r=newRec(true);
  r.onresult=e=>{holdInterim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript.trim();if(e.results[i].isFinal){if(t)holdParts.push(t)}else holdInterim=t}
   $('status').textContent='Listening… '+[...holdParts,holdInterim].join(' ')};
- r.onerror=e=>{if(e.error!=='no-speech')$('status').textContent='Mic: '+e.error+(e.error==='not-allowed'?' (allow microphone access)':'')};
+ r.onerror=e=>{if(e.error!=='no-speech'){holdListening=false;$('status').textContent='Mic: '+e.error+(e.error==='not-allowed'?' (allow microphone access)':'')}};
  r.onend=()=>{holdRec=null;if(holdListening&&micMode==='hold')setTimeout(beginHold,120);else finishHold()};return r}
-function beginHold(){if(!holdListening||holdRec||!SR)return;holdRec=makeHold();try{holdRec.start()}catch{holdRec=null}}
+function beginHold(){if(!holdListening||holdRec||!SR)return;holdRec=makeHold();try{holdRec.start()}catch{holdRec=null;holdListening=false;finishHold()}}
+function activateRaisedHand(){if(!handRaised||speaker||micMode!=='hold')return;handRaised=false;holdListening=true;holdFinalized=false;duckBgm(true,true);$('talk').classList.add('on');$('talk').textContent='Tap to finish';$('status').textContent='Your turn — listening now. Take your time.';beginHold()}
 function startLive(){if(liveRec)return;liveRec=newRec(true);
  liveRec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)userLine(e.results[i][0].transcript)};
  liveRec.onerror=e=>{if(e.error==='no-speech')return;$('status').textContent='Mic: '+e.error};
  liveRec.onend=()=>{liveRec=null;if(micMode==='live'&&running){try{startLive()}catch{}}};
  try{liveRec.start()}catch{}}
-function stopAllRec(){holdListening=false;holdParts=[];holdInterim='';[holdRec,liveRec].forEach(r=>{try{r&&r.abort()}catch{}});holdRec=liveRec=null;$('talk').classList.remove('on');$('talk').textContent='Tap to talk'}
+function stopAllRec(){holdListening=false;handRaised=false;holdFinalized=true;holdParts=[];holdInterim='';[holdRec,liveRec].forEach(r=>{try{r&&r.abort()}catch{}});holdRec=liveRec=null;$('talk').classList.remove('on');$('talk').textContent='Tap to talk';releaseFloor()}
 $('micmode').onchange=e=>{micMode=e.target.value;stopAllRec();
  if(micMode==='hold'){$('talk').style.display='';$('status').textContent='Tap once to start; tap again when you finish.'}
  else{$('talk').style.display='none';
@@ -366,7 +370,8 @@ $('micmode').onchange=e=>{micMode=e.target.value;stopAllRec();
   else $('status').textContent='Mic off.'}duckBgm(micMode==='live')};
 $('miclang').onchange=()=>{if(micMode==='live'){if(liveRec){try{liveRec.abort()}catch{}}else if(running)startLive()}const names={id:'Bahasa Indonesia',en:'English',zh:'简体中文'};$('status').textContent='Mic language: '+names[$('miclang').value]};
 {const t=$('talk');t.addEventListener('click',()=>{if(micMode!=='hold'||!SR)return;
- if(!holdListening){holdParts=[];holdInterim='';holdListening=true;stopPlayback();duckBgm(true);t.classList.add('on');t.textContent='Tap to finish';$('status').textContent='Listening… take your time.';beginHold()}
+ if(!handRaised&&!holdListening){holdParts=[];holdInterim='';holdFinalized=false;handRaised=true;t.classList.add('on');if(speaker){t.textContent='✋ Hand raised';$('status').textContent=`Hand raised — ${speaker.name} will finish, then it is your turn.`}else activateRaisedHand()}
+ else if(handRaised){handRaised=false;holdFinalized=true;t.classList.remove('on');t.textContent='Tap to talk';$('status').textContent='Hand lowered — conversation continuing.';releaseFloor()}
  else{holdListening=false;t.textContent='Finishing…';if(holdRec){try{holdRec.stop()}catch{finishHold()}}else finishHold()}})}
 
 /* ---------- reactions & fidgets ---------- */
@@ -383,7 +388,7 @@ function emojiPop(a,list,n=6){const r=card(a).getBoundingClientRect();for(let k=
 function confetti(a){emojiPop(a,a.name==='Funny'?['🎉','✨','😜','💖','🤪','⭐']:a.name==='Cheffy'?['🥑','🥦','🍓','✨']:['📋','✨','⭐'],10)}
 let speaker=null,reactT=null;
 function startReactions(lang){clearInterval(reactT);reactT=setInterval(()=>{if(!running)return;
- const L=lang==='auto'?pick(['en','id']):lang;
+ const L=lang;
  for(const a of AGENTS){if(a===speaker)continue;
   lookAt(a,speaker);const r=Math.random();
   if(speaker){if(r<.19)nod(a);else if(r<.29&&a.name==='Funny'){giggle(a);if(Math.random()<.5)emojiPop(a,['😆','🤭','😂'],3)}else if(r<.38)fidget(a);else if(r<.43)emojiPop(a,pick([['👍'],['😮'],['💡'],['❤️'],['😂']]),2)}
@@ -401,36 +406,37 @@ function emotionReaction(a,e){setEmotion(a,e);for(const o of AGENTS){if(o===a)co
 const TOPIC_HINTS={Mindy:/plan|schedule|time|organize|priority|work|money|calendar|rencana|jadwal|waktu|atur|kerja|uang|计划|安排|时间|工作|日程|优先/u,Cheffy:/food|cook|eat|meal|health|recipe|kitchen|makan|masak|sehat|resep|dapur|食物|吃|做饭|健康|食谱|厨房/u,Funny:/fun|joke|laugh|weird|love|friend|lucu|kocak|canda|ketawa|aneh|seru|笑|玩笑|有趣|奇怪|朋友/u};
 function openingOrder(mode){return mode==='long'?[byName('Cheffy'),byName('Mindy'),byName('Funny')]:mode==='short'?[byName('Mindy'),byName('Funny'),byName('Cheffy')]:[byName('Funny'),byName('Mindy'),byName('Cheffy')]}
 function claimUser(){if(userMessageId<=answeredUserId||claimedUserId===userMessageId)return null;claimedUserId=userMessageId;return{id:userMessageId,text:lastUserText}}
-function prepareItem(a,turn,ctx,epoch,snapshot,{wrapUp=false,openingTurn=false}={}){const item={a,wrapUp,openingTurn,started:Date.now(),readyAt:null,status:'generating',done:false,result:null,promise:null,attempts:0};if(a!==speaker)setState(a,'THINKING',openingTurn?'OPENING IDEA':'THINKING');waitingVisual(item);const watch=setInterval(()=>waitingVisual(item),1000);
- item.promise=(async()=>{while(running&&epoch===roomEpoch){item.status='generating';item.started=Date.now();item.attempts++;waitingVisual(item);const userMessage=claimUser(),j=await ask(a,turn,ctx,epoch,snapshot,wrapUp,openingTurn,userMessage);if(j.cancelled)return j;if(j.error){if(userMessage?.id===claimedUserId&&answeredUserId<userMessage.id)claimedUserId=0;item.status='retrying';item.result=j;waitingVisual(item);await sleep(Math.min(5000,900+item.attempts*500));continue}
+function prepareItem(a,turn,ctx,epoch,snapshot,{wrapUp=false,openingTurn=false}={}){const item={a,wrapUp,openingTurn,started:Date.now(),readyAt:null,status:'generating',done:false,result:null,promise:null,attempts:0,controller:null,userId:0};if(a!==speaker)setState(a,'THINKING',openingTurn?'OPENING IDEA':'THINKING');waitingVisual(item);const watch=setInterval(()=>waitingVisual(item),1000);
+ item.promise=(async()=>{while(running&&epoch===roomEpoch&&!item.done){item.status='generating';item.started=Date.now();item.attempts++;waitingVisual(item);const userMessage=claimUser();item.userId=userMessage?.id||0;const j=await ask(a,turn,ctx,epoch,snapshot,wrapUp,openingTurn,userMessage,item);if(j.cancelled)return j;if(j.error){if(userMessage?.id===claimedUserId&&answeredUserId<userMessage.id)claimedUserId=0;item.status='retrying';item.result=j;waitingVisual(item);await sleep(Math.min(5000,900+item.attempts*500));continue}
    if(typeof j.text==='string'&&j.text.trim()){item.status='ready';item.readyAt=Date.now();item.result=j;if(running&&epoch===roomEpoch&&a!==speaker){setState(a,'THINKING',wrapUp?'FINALE READY':openingTurn?'OPINION READY':'SCRIPT READY');$('w-'+a.name).textContent=wrapUp?'🎬':openingTurn?'🎙️':'💬'}return j}}
   return{cancelled:true}})().then(j=>({item,j})).finally(()=>clearInterval(watch));return item}
-function readyItem(pool,lastSpeaker,opened,stats,openingRank){const active=[...pool.values()].filter(x=>!x.done),allReady=active.filter(x=>x.status==='ready');if(!allReady.length)return null;const otherReady=allReady.filter(x=>x.a!==lastSpeaker);if(!otherReady.length&&active.some(x=>x.a!==lastSpeaker))return null;const ready=otherReady.length?otherReady:allReady;return ready.map(item=>{let score=0;if(!opened.has(item.a.name))score+=1000-(openingRank.get(item.a.name)||0)*5;const silence=stats.turn-(stats.last[item.a.name]??-3);score+=Math.min(12,Math.max(0,silence))*4-(stats.count[item.a.name]||0)*2;score-=item.readyAt/1e13;return{item,score}}).sort((x,y)=>y.score-x.score)[0].item}
-async function waitForReady(pool,lastSpeaker,opened,stats,openingRank){while(running){const ready=readyItem(pool,lastSpeaker,opened,stats,openingRank);if(ready)return ready;const pending=[...pool.values()].filter(x=>!x.done).map(x=>x.promise);$('status').textContent='All three Minds are preparing — the first ready Mind gets the floor.';if(!pending.length){await sleep(150);continue}await Promise.race(pending)}return null}
+function readyItem(pool,lastSpeaker,opened,stats,openingRank,finalRound=false){const active=[...pool.values()].filter(x=>!x.done),needsUserReply=mustAnswerUserId>answeredUserId,releaseQueued=needsUserReply&&allowQueuedBeforeUser,priorityTurn=needsUserReply||finalRound;let allReady=active.filter(x=>x.status==='ready');if(finalRound)allReady=allReady.filter(x=>x.wrapUp);if(needsUserReply&&!releaseQueued)allReady=allReady.filter(x=>x.result?._userId===mustAnswerUserId);if(!allReady.length)return null;const otherReady=allReady.filter(x=>x.a!==lastSpeaker);if(!priorityTurn&&!otherReady.length&&active.some(x=>x.a!==lastSpeaker))return null;const ready=otherReady.length?otherReady:allReady;return ready.map(item=>{let score=0;if(!opened.has(item.a.name))score+=1000-(openingRank.get(item.a.name)||0)*5;const silence=stats.turn-(stats.last[item.a.name]??-3);score+=Math.min(12,Math.max(0,silence))*4-(stats.count[item.a.name]||0)*2;score-=item.readyAt/1e13;return{item,score}}).sort((x,y)=>y.score-x.score)[0].item}
+async function waitForReady(pool,lastSpeaker,opened,stats,openingRank,finalRound=false){while(running){const ready=readyItem(pool,lastSpeaker,opened,stats,openingRank,finalRound);if(ready)return ready;const pending=[...pool.values()].filter(x=>!x.done&&x.status!=='ready').map(x=>x.promise);$('status').textContent=mustAnswerUserId>answeredUserId?'A Mind is preparing a response to you…':finalRound?'The closing Mind is preparing the finale…':'All three Minds are preparing — the first ready Mind gets the floor.';if(!pending.length){await sleep(150);continue}await Promise.race(pending)}return null}
 function poolStatus(pool){const items=[...pool.values()].filter(x=>!x.done),ready=[...new Set(items.filter(x=>x.status==='ready').map(x=>x.a.name))],thinking=[...new Set(items.filter(x=>x.status!=='ready').map(x=>x.a.name))];return(ready.length?' · '+ready.join(' & ')+' ready':'')+(thinking.length?' · '+thinking.join(' & ')+' preparing':'')}
-async function run(){running=true;$('start').disabled=true;$('stop').disabled=false;transcript=[];$('log').innerHTML='';
+async function run(){running=true;mustAnswerUserId=0;allowQueuedBeforeUser=false;livePool=null;liveRefreshForUser=null;$('start').disabled=true;$('stop').disabled=false;transcript=[];$('log').innerHTML='';
  $('timing').style.display='none';
  const session=$('fresh').checked?'s'+Date.now().toString(36):'',st=$('cards');st.classList.remove('enter');void st.offsetWidth;st.classList.add('live','enter');
- const topic=$('topic').value.trim()||'today',lang=$('lang').value,turns=Math.max(1,+$('turns').value||9),steward=stewardName();$('steward').value=steward;const ctx={topic,lang,session,fast:$('fast').checked,replyLength:$('replylength').value,steward};if(lang!=='auto')$('miclang').value=lang;
+ const topic=$('topic').value.trim()||'today',lang=$('lang').value,turns=Math.max(1,+$('turns').value||9),steward=stewardName();$('steward').value=steward;const ctx={topic,lang,session,fast:$('fast').checked,replyLength:$('replylength').value,steward};$('miclang').value=lang;
  applyScene(ctx.replyLength);transcript.push({speaker:'User',text:topic,seed:true});
  const hadPre=preLines.length>0;preLines.forEach(t=>transcript.push({speaker:'User',text:t}));if(hadPre)lastUserText=preLines[preLines.length-1];else{lastUserText='';answeredUserId=userMessageId}claimedUserId=0;preLines=[];
  await startBgm(ctx.replyLength);if(micMode==='live')duckBgm(true);if(micMode==='live'&&SR&&!liveRec)startLive();$('sub').classList.remove('chinese-mode');$('sub').textContent='🎬 '+topic;startReactions(lang);
- roomEpoch++;cancelAsks();const epoch=roomEpoch,stats={turn:0,last:{},count:{}},opened=new Set(),pool=new Map(),order=openingOrder(ctx.replyLength),openingRank=new Map(order.map((a,i)=>[a.name,i]));let delivered=0,cleanEnd=true,lastSpeaker=null;
+ roomEpoch++;cancelAsks();const epoch=roomEpoch,stats={turn:0,last:{},count:{}},opened=new Set(),pool=new Map(),order=openingOrder(ctx.replyLength),openingRank=new Map(order.map((a,i)=>[a.name,i]));livePool=pool;let delivered=0,cleanEnd=true,lastSpeaker=null;
  const fillPool=()=>{for(const a of AGENTS)if(!pool.has(a.name)&&running&&delivered<turns)pool.set(a.name,prepareItem(a,delivered,ctx,epoch,transcript.slice(),{openingTurn:!opened.has(a.name),wrapUp:delivered===turns-1}))};
+ liveRefreshForUser=()=>{if(!running||mustAnswerUserId<=answeredUserId)return;const target=[...pool.values()].filter(x=>!x.done&&x.status!=='ready').sort((x,y)=>x.started-y.started)[0];if(!target){fillPool();return}pool.delete(target.a.name);target.done=true;target.controller?.abort();claimedUserId=0;pool.set(target.a.name,prepareItem(target.a,delivered,ctx,epoch,transcript.slice(),{openingTurn:!opened.has(target.a.name),wrapUp:delivered===turns-1}))};
  fillPool();
  await openingSequence(ctx.replyLength,topic,lang);if(!running)return;
- while(delivered<turns&&running){fillPool();const item=await waitForReady(pool,lastSpeaker,opened,stats,openingRank);if(!item)break;pool.delete(item.a.name);item.done=true;const j=item.result,a=item.a,thinkS=item.started?((item.readyAt||Date.now())-item.started)/1000:0;
+ while(delivered<turns&&running){await waitForFloor();if(!running)break;fillPool();const finalRound=delivered===turns-1,item=await waitForReady(pool,lastSpeaker,opened,stats,openingRank,finalRound);if(!item)break;await waitForFloor();if(!running)break;pool.delete(item.a.name);item.done=true;const j=item.result,a=item.a,thinkS=item.started?((item.readyAt||Date.now())-item.started)/1000:0;
   if(!running||epoch!==roomEpoch||j?.cancelled)break;
   const out=j,emotion=out.emotion||emotionOf(out.text),visible=out.displayText||showText(out.text),bubbleText=lang==='zh'?showText(out.text):visible;
-  transcript.push({speaker:a.name,text:out.text,emotion});if(out._userId){answeredUserId=Math.max(answeredUserId,out._userId);if(claimedUserId===out._userId)claimedUserId=0}addLog(a,bubbleText,lang);renderSubtitle(a,visible,lang==='zh');
+   const bridgeId=mustAnswerUserId>answeredUserId?mustAnswerUserId:0,answersUser=!!(bridgeId&&out._userId===bridgeId);transcript.push({speaker:a.name,text:out.text,emotion});if(bridgeId&&!answersUser&&allowQueuedBeforeUser){allowQueuedBeforeUser=false;let keptUserDraft=false;for(const [name,stale] of pool){if((stale.result?._userId||stale.userId)===bridgeId){keptUserDraft=true;continue}stale.done=true;stale.controller?.abort();pool.delete(name)}if(!keptUserDraft&&claimedUserId===bridgeId)claimedUserId=0}if(out._userId){answeredUserId=Math.max(answeredUserId,out._userId);if(claimedUserId===out._userId)claimedUserId=0;if(answeredUserId>=mustAnswerUserId)mustAnswerUserId=0}if(answersUser){allowQueuedBeforeUser=false;for(const stale of pool.values()){stale.done=true;stale.controller?.abort()}pool.clear()}addLog(a,bubbleText,lang);renderSubtitle(a,visible,lang==='zh');
   stats.count[a.name]=(stats.count[a.name]||0)+1;stats.last[a.name]=stats.turn++;opened.add(a.name);delivered++;lastSpeaker=a;speaker=a;card(a).classList.remove('synced');setState(a,'SPEAKING');emotionReaction(a,emotion);AGENTS.forEach(o=>o!==a&&lookAt(o,a));const stopCaptions=startBubbleCaptions(a,bubbleText);fillPool();
   if(a.name==='Funny'&&emotion==='excited')confetti(a);for(const o of AGENTS)if(o!==a&&out.text.toLowerCase().includes(o.name.toLowerCase()))mini(o,pick(['me?? 😳','👀','hey! 😤','oh! 😅']));
   $('status').textContent=`${a.name} is speaking`+poolStatus(pool);
-  const tV=Date.now();duckBgm(true);try{await speak(a,out.text,lang,emotion)}finally{stopCaptions()}duckBgm(micMode==='live'||holdListening);const voiceS=(Date.now()-tV)/1000;$('timing').style.display='block';$('timing').textContent=a.name+': thinking '+thinkS.toFixed(1)+'s'+(out.ms?' (server '+(out.ms/1000).toFixed(1)+'s)':'')+' - voice '+voiceS.toFixed(1)+'s';setEmotion(a,'neutral');speaker=null;const own=pool.get(a.name);if(own)waitingVisual(own);else setState(a,'READY');await sleep(rnd(120,260))}
+  const tV=Date.now();duckBgm(true);try{await speak(a,out.text,lang,emotion)}finally{stopCaptions()}const voiceS=(Date.now()-tV)/1000;$('timing').style.display='block';$('timing').textContent=a.name+': thinking '+thinkS.toFixed(1)+'s'+(out.ms?' (server '+(out.ms/1000).toFixed(1)+'s)':'')+' - voice '+voiceS.toFixed(1)+'s';setEmotion(a,'neutral');speaker=null;const own=pool.get(a.name);if(own)waitingVisual(own);else setState(a,'READY');if(handRaised)activateRaisedHand();duckBgm(micMode==='live'||holdListening,holdListening);await waitForFloor();if(!running)break;await sleep(rnd(120,260))}
  const finished=running;stop(true);if(finished&&cleanEnd&&transcript.length>2)celebrate()}
 function celebrate(){AGENTS.forEach((a,k)=>setTimeout(()=>{confetti(a);giggle(a)},k*250));$('sub').classList.remove('chinese-mode');$('sub').textContent="🎉 That's a wrap! 🎉";
  for(const a of AGENTS)card(a).classList.add('cheer');setTimeout(()=>AGENTS.forEach(a=>card(a).classList.remove('cheer')),2400)}
-function stop(done){running=false;roomEpoch++;cancelAsks();stopPlayback();stopBgm();if(micMode==='live'||holdListening)stopAllRec();clearInterval(reactT);speaker=null;$('cards').classList.remove('live');
+function stop(done){running=false;roomEpoch++;cancelAsks();stopPlayback();stopBgm();if(micMode==='live'||holdListening||handRaised)stopAllRec();clearInterval(reactT);speaker=null;livePool=null;liveRefreshForUser=null;mustAnswerUserId=0;allowQueuedBeforeUser=false;$('cards').classList.remove('live');
  AGENTS.forEach(a=>{setState(a,'READY');setEmotion(a,'neutral');lookAt(a,null)});$('start').disabled=false;$('stop').disabled=true;
  if(!done)$('status').textContent='Stopped.';else if(!$('status').textContent.startsWith('Error'))$('status').textContent='Conversation finished.'}
 /* ---------- Voice Lab: record + store on server ---------- */
@@ -460,7 +466,7 @@ $('reclist').addEventListener('click',async e=>{const p=e.target.closest('.rplay
 loadRecs();
 $('replylength').onchange=()=>{if($('replylength').value!=='short')$('fast').checked=false;applyScene($('replylength').value)};
 $('fast').onchange=()=>{if($('fast').checked){$('replylength').value='short';applyScene('short')}};
-$('lang').onchange=()=>{const L=$('lang').value,names={en:'English',id:'Bahasa Indonesia',zh:'简体中文',auto:'EN + ID mix'};if(L!=='auto')$('miclang').value=L;$('fresh').checked=true;if(running)stop(false);$('status').textContent='Language set to '+names[L]+'. Press Start for a fresh conversation.'};
+$('lang').onchange=()=>{const L=$('lang').value,names={en:'English',id:'Bahasa Indonesia',zh:'简体中文'};$('miclang').value=L;$('fresh').checked=true;if(running)stop(false);$('status').textContent='Language set to '+names[L]+'. Press Start for a fresh conversation.'};
 $('start').onclick=run;$('stop').onclick=()=>stop(false);
 fetch('/api/health').then(r=>r.json()).then(h=>{serverTTS=!!h.tts;$('srvwrap').style.display=serverTTS?'flex':'none';
  if(h.mock)$('status').textContent='Running in MOCK mode (canned lines, no API key).';else if(serverTTS)$('status').textContent=`Server voice ready (${h.tts}${h.elModel?', '+h.elModel:''}).`}).catch(()=>{});
